@@ -12,11 +12,13 @@
 #include "esp_lcd_panel_io.h"
 #include "esp_lcd_panel_vendor.h"
 #include "esp_lcd_panel_ops.h"
+#include "driver/pulse_cnt.h"
 #include "driver/gpio.h"
 #include "driver/spi_master.h"
 #include "esp_err.h"
 #include "esp_log.h"
 #include "lvgl.h"
+#include "stdbool.h"
 
 #if CONFIG_EXAMPLE_LCD_CONTROLLER_ILI9341
 #include "esp_lcd_ili9341.h"
@@ -33,7 +35,20 @@ static const char *TAG = "example";
 // Using SPI2 in the example
 #define LCD_HOST  SPI2_HOST
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//ENCODER !
+#define EXAMPLE_ENCODER1_CLK            17
+#define EXAMPLE_ENCODER1_DT             13
+#define EXAMPLE_ENCODER1_BTN            22
+//ENCODER 2
+#define EXAMPLE_ENCODER2_CLK            38
+#define EXAMPLE_ENCODER2_DT             37
+#define EXAMPLE_ENCODER2_BTN            32
+
+#define ENCODER_MAX_WHATCHPIONT_COINT 100
+
+#define EXAMPLE_PCNT_HIGH_LIMIT 50
+#define EXAMPLE_PCNT_LOW_LIMIT  -50
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////// Please update the following configuration according to your LCD spec //////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #define EXAMPLE_LCD_PIXEL_CLOCK_HZ     (20 * 1000 * 1000)
@@ -69,6 +84,102 @@ static const char *TAG = "example";
 #define EXAMPLE_LVGL_TASK_PRIORITY     2
 
 static SemaphoreHandle_t lvgl_mux = NULL;
+//strukture podataka i funkcije za enkoder
+typedef struct
+{
+	uint32_t eventCount;
+	QueueHandle_t queue;
+	void (*callback)(uint32_t encoderValue);
+}encoder_handler_t;
+/* VARIABLES -----------------------------------------------------------------*/
+static const char *encoder = "encoder";
+
+
+static pcnt_unit_handle_t pcnt_unit1 = NULL;
+static pcnt_unit_handle_t pcnt_unit2 = NULL;
+
+
+encoder_handler_t hEncoder = {0};
+
+static bool pcnt_on_reach(pcnt_unit_handle_t unit, const pcnt_watch_event_data_t *edata, void *user_ctx)
+{
+    BaseType_t high_task_wakeup;
+    QueueHandle_t queue = (QueueHandle_t)user_ctx;
+    // send event data to queue, from this interrupt callback
+    xQueueSendFromISR(queue, &(edata->watch_point_value), &high_task_wakeup);
+    return (high_task_wakeup == pdTRUE);
+}
+
+void encoder_init(void* callback, pcnt_unit_handle_t pcnt_unit, int gpio_CLK, int gpio_DT, int gpio_BTN)
+{
+    ESP_LOGI(encoder, "install pcnt unit");
+    pcnt_unit_config_t unit_config = {
+        .high_limit = EXAMPLE_PCNT_HIGH_LIMIT,
+        .low_limit = EXAMPLE_PCNT_LOW_LIMIT,
+    };
+
+    gpio_config_t knob_button_config = {
+        .mode = GPIO_MODE_INPUT,
+        .pin_bit_mask = 1ULL << gpio_BTN
+    };
+    ESP_ERROR_CHECK(gpio_config(&knob_button_config));
+
+
+    ESP_ERROR_CHECK(pcnt_new_unit(&unit_config, &pcnt_unit));
+
+    ESP_LOGI(encoder, "set glitch filter");
+    pcnt_glitch_filter_config_t filter_config = {
+        .max_glitch_ns = 1000,
+    };
+    ESP_ERROR_CHECK(pcnt_unit_set_glitch_filter(pcnt_unit, &filter_config));
+
+    ESP_LOGI(encoder, "install pcnt channels");
+    pcnt_chan_config_t chan_a_config = {
+        .edge_gpio_num = gpio_CLK,
+        .level_gpio_num = gpio_DT,
+    };
+    pcnt_channel_handle_t pcnt_chan_a = NULL;
+    ESP_ERROR_CHECK(pcnt_new_channel(pcnt_unit, &chan_a_config, &pcnt_chan_a));
+    pcnt_chan_config_t chan_b_config = {
+        .edge_gpio_num = gpio_CLK,
+        .level_gpio_num = gpio_DT,
+    };
+    pcnt_channel_handle_t pcnt_chan_b = NULL;
+    ESP_ERROR_CHECK(pcnt_new_channel(pcnt_unit, &chan_b_config, &pcnt_chan_b));
+
+    ESP_LOGI(encoder, "set edge and level actions for pcnt channels");
+    ESP_ERROR_CHECK(pcnt_channel_set_edge_action(pcnt_chan_a, PCNT_CHANNEL_EDGE_ACTION_DECREASE, PCNT_CHANNEL_EDGE_ACTION_INCREASE));
+    ESP_ERROR_CHECK(pcnt_channel_set_level_action(pcnt_chan_a, PCNT_CHANNEL_LEVEL_ACTION_KEEP, PCNT_CHANNEL_LEVEL_ACTION_INVERSE));
+    ESP_ERROR_CHECK(pcnt_channel_set_edge_action(pcnt_chan_b, PCNT_CHANNEL_EDGE_ACTION_INCREASE, PCNT_CHANNEL_EDGE_ACTION_DECREASE));
+    ESP_ERROR_CHECK(pcnt_channel_set_level_action(pcnt_chan_b, PCNT_CHANNEL_LEVEL_ACTION_KEEP, PCNT_CHANNEL_LEVEL_ACTION_INVERSE));
+
+    ESP_LOGI(encoder, "add watch points and register callbacks");
+
+
+    int watch_points[] = {-50,-40,-30};
+
+//    memcpy(hEncoder.whatchPoints, watch_points, sizeof(watch_points));
+
+    for (size_t i = 0; i < sizeof(watch_points) / sizeof(watch_points[0]); i++) {
+        ESP_ERROR_CHECK(pcnt_unit_add_watch_point(pcnt_unit, watch_points[i]));
+    }
+    pcnt_event_callbacks_t cbs = {
+        .on_reach = pcnt_on_reach,
+    };
+    hEncoder.queue = xQueueCreate(10, sizeof(int));
+    ESP_ERROR_CHECK(pcnt_unit_register_event_callbacks(pcnt_unit, &cbs, hEncoder.queue));
+
+    ESP_LOGI(encoder, "enable pcnt unit");
+    ESP_ERROR_CHECK(pcnt_unit_enable(pcnt_unit));
+    ESP_LOGI(encoder, "clear pcnt unit");
+    ESP_ERROR_CHECK(pcnt_unit_clear_count(pcnt_unit));
+    ESP_LOGI(encoder, "start pcnt unit");
+    ESP_ERROR_CHECK(pcnt_unit_start(pcnt_unit));
+
+    //External callback register.
+    hEncoder.callback = callback;
+}
+
 
 #if CONFIG_EXAMPLE_LCD_TOUCH_ENABLED
 esp_lcd_touch_handle_t tp = NULL;
@@ -205,6 +316,69 @@ static void example_lvgl_port_task(void *arg)
     }
 }
 
+//zadatak za citanje enkodera
+void encoder_handler_task(void *param, pcnt_unit_handle_t pcnt_unit)
+{
+	static int pulse_count = 5000;
+
+	int static prev_pulse_count = 0;
+
+	const uint8_t pulse_offest = 50;
+
+	const uint8_t rotary_step = 4;
+
+	bool encoder_direction = 0;
+
+	static bool negative_pulse_falg = false;
+
+
+
+    while (1)
+    {
+
+        pcnt_unit_get_count(pcnt_unit, &pulse_count);
+             
+
+        if(pulse_count < -1  || (negative_pulse_falg == true && pulse_count == 0))
+        {
+        	negative_pulse_falg = true;
+        }
+        else
+        {
+        	negative_pulse_falg = false;
+        }
+
+        pulse_count = pulse_count > 0 ? pulse_count : pulse_count * -1;
+
+        if((pulse_count - prev_pulse_count >= rotary_step) || (pulse_count - prev_pulse_count <= rotary_step * -1))
+        {
+
+        	if(negative_pulse_falg)
+        	{
+        		encoder_direction = pulse_count > prev_pulse_count ? false : true;
+
+        		ESP_LOGI(encoder, "negative");
+        	}
+        	else
+        	{
+        		encoder_direction = pulse_count > prev_pulse_count ? true : false;
+        		ESP_LOGI(encoder, "Positive");
+        	}
+        	
+        	hEncoder.callback(encoder_direction);
+
+           // hEncoder.callback(pulse_count + pulse_offest);
+
+            prev_pulse_count = pulse_count;
+
+            ESP_LOGI(encoder, "pulse count %d , direction %d", pulse_count, encoder_direction);
+        }
+
+
+        vTaskDelay(50/portTICK_PERIOD_MS);
+    }
+}
+
 void app_main(void)
 {
     static lv_disp_draw_buf_t disp_buf; // contains internal graphic buffer(s) called draw buffer(s)
@@ -338,6 +512,8 @@ void app_main(void)
 
     lv_indev_drv_register(&indev_drv);
 #endif
+
+
 
     lvgl_mux = xSemaphoreCreateRecursiveMutex();
     assert(lvgl_mux);

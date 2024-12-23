@@ -9,7 +9,7 @@
 #include "lvgl.h"
 
 
-void example_lvgl_demo_ui(lv_disp_t *disp)
+void example_lvgl_demo_ui(lv_disp_t *disp, lv_indev_t *encoder1, lv_indev_t *encoder2)
 {
     lv_obj_t *scr = lv_disp_get_scr_act(disp);
     lv_group_t * g = lv_group_create();
@@ -43,7 +43,10 @@ void example_lvgl_demo_ui(lv_disp_t *disp)
     label = lv_label_create(cont);
     lv_label_set_text(label, "Item 3 (Click me!)");
     lv_menu_set_load_page_event(menu, cont, sub_page);
+    //stavljaje menija u grupu
     lv_group_add_obj(g, main_page);
+    lv_group_add_obj(g, sub_page);
+    lv_indev_set_group(encoder1, g); //mapiranje ulaznog uređaja na grupu
 
     lv_menu_set_page(menu, main_page);
 }
