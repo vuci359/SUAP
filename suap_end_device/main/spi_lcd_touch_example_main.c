@@ -91,15 +91,25 @@ typedef struct
 	QueueHandle_t queue;
 	void (*callback)(uint32_t encoderValue);
 }encoder_handler_t;
+
+typedef struct {
+    pcnt_unit_handle_t encoder;
+    encoder_handler_t hEncoder;
+} encoder_args;
 /* VARIABLES -----------------------------------------------------------------*/
 static const char *encoder = "encoder";
+static void main_encoder_cb(uint32_t knobPosition){
+    ESP_LOGI(TAG, "%d\n", 500);
+}
 
 
-static pcnt_unit_handle_t pcnt_unit1 = NULL;
-static pcnt_unit_handle_t pcnt_unit2 = NULL;
+static pcnt_unit_handle_t encoder1 = NULL;
+static pcnt_unit_handle_t encoder2 = NULL;
 
 
-encoder_handler_t hEncoder = {0};
+encoder_handler_t hEncoder1 = {0};
+encoder_handler_t hEncoder2 = {0};
+
 
 static bool pcnt_on_reach(pcnt_unit_handle_t unit, const pcnt_watch_event_data_t *edata, void *user_ctx)
 {
@@ -110,7 +120,7 @@ static bool pcnt_on_reach(pcnt_unit_handle_t unit, const pcnt_watch_event_data_t
     return (high_task_wakeup == pdTRUE);
 }
 
-void encoder_init(void* callback, pcnt_unit_handle_t pcnt_unit, int gpio_CLK, int gpio_DT, int gpio_BTN)
+void encoder_init(void* callback, pcnt_unit_handle_t *pcnt_unit, encoder_handler_t *hEncoder, int gpio_CLK, int gpio_DT, int gpio_BTN)
 {
     ESP_LOGI(encoder, "install pcnt unit");
     pcnt_unit_config_t unit_config = {
@@ -166,8 +176,8 @@ void encoder_init(void* callback, pcnt_unit_handle_t pcnt_unit, int gpio_CLK, in
     pcnt_event_callbacks_t cbs = {
         .on_reach = pcnt_on_reach,
     };
-    hEncoder.queue = xQueueCreate(10, sizeof(int));
-    ESP_ERROR_CHECK(pcnt_unit_register_event_callbacks(pcnt_unit, &cbs, hEncoder.queue));
+    hEncoder->queue = xQueueCreate(10, sizeof(int));
+    ESP_ERROR_CHECK(pcnt_unit_register_event_callbacks(pcnt_unit, &cbs, hEncoder->queue));
 
     ESP_LOGI(encoder, "enable pcnt unit");
     ESP_ERROR_CHECK(pcnt_unit_enable(pcnt_unit));
@@ -177,7 +187,7 @@ void encoder_init(void* callback, pcnt_unit_handle_t pcnt_unit, int gpio_CLK, in
     ESP_ERROR_CHECK(pcnt_unit_start(pcnt_unit));
 
     //External callback register.
-    hEncoder.callback = callback;
+    hEncoder->callback = callback;
 }
 
 
@@ -317,8 +327,10 @@ static void example_lvgl_port_task(void *arg)
 }
 
 //zadatak za citanje enkodera
-void encoder_handler_task(void *param, pcnt_unit_handle_t pcnt_unit)
+void encoder_handler_task(void *param, encoder_args args)
 {
+    ESP_LOGI(encoder, "ulaz_u_task");
+
 	static int pulse_count = 5000;
 
 	int static prev_pulse_count = 0;
@@ -331,12 +343,20 @@ void encoder_handler_task(void *param, pcnt_unit_handle_t pcnt_unit)
 
 	static bool negative_pulse_falg = false;
 
+    ESP_LOGI(encoder, "prije_struct");
+
+    pcnt_unit_handle_t encoder_pcnt = args.encoder;
+    encoder_handler_t hEncoder = args.hEncoder;
+
+
+
+    ESP_LOGI(encoder, "prije_while");
 
 
     while (1)
     {
 
-        pcnt_unit_get_count(pcnt_unit, &pulse_count);
+        pcnt_unit_get_count(encoder_pcnt, &pulse_count);
              
 
         if(pulse_count < -1  || (negative_pulse_falg == true && pulse_count == 0))
@@ -512,7 +532,17 @@ void app_main(void)
 
     lv_indev_drv_register(&indev_drv);
 #endif
+    //tu treba ubaciti inicijalizacijski kod za enkoder
+    ESP_LOGI(TAG, "Init ENCODER1");
+    encoder_init(main_encoder_cb, &encoder1, &hEncoder1, EXAMPLE_ENCODER1_CLK, EXAMPLE_ENCODER1_DT, EXAMPLE_ENCODER1_BTN);
 
+    encoder_args encoder1_args = {
+        .encoder = encoder1,
+        .hEncoder = hEncoder1
+    };
+        ESP_LOGI(TAG, "Create ENCODER1 task");
+
+    xTaskCreate(encoder_handler_task, "ENCODER1", 1*1024, &encoder1_args, 1, NULL);
 
 
     lvgl_mux = xSemaphoreCreateRecursiveMutex();
@@ -528,3 +558,4 @@ void app_main(void)
         example_lvgl_unlock();
     }
 }
+ 
