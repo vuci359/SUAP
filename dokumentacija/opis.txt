@@ -1,0 +1,18 @@
+LVGL - library za grafičko sučelje
+
+spi_lcd_touch - primjer koda na kojem se bazira programsko rješenje
+
+esp_lcd_ili9341 - drivar za display
+
+spi_lcd_touch_example_main - programski kod za inicijalizaciju i pokretanje grafičkog sučelja
+lvgl_demo_ui - programski kod za grafičko sučelje
+
+STRAPPING pinovi - imaju problema sami sa sobom
+
+ESP32 has 6 strapping pins:
+• MTDI/GPIO12: internal pull-down
+• GPIO0: internal pull-up
+• GPIO2: internal pull-down
+• GPIO4: internal pull-down
+• MTDO/GPIO15: internal pull-up
+• GPIO5: internal pull-up
