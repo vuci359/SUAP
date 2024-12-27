@@ -92,10 +92,6 @@ typedef struct
 	void (*callback)(uint32_t encoderValue);
 }encoder_handler_t;
 
-typedef struct {
-    pcnt_unit_handle_t encoder;
-    encoder_handler_t hEncoder;
-} encoder_args;
 /* VARIABLES -----------------------------------------------------------------*/
 static const char *encoder = "encoder";
 static void main_encoder_cb(uint32_t knobPosition){
@@ -103,12 +99,8 @@ static void main_encoder_cb(uint32_t knobPosition){
 }
 
 
-static pcnt_unit_handle_t encoder1 = NULL;
-static pcnt_unit_handle_t encoder2 = NULL;
-
-
-encoder_handler_t hEncoder1 = {0};
-encoder_handler_t hEncoder2 = {0};
+pcnt_unit_handle_t encoders[2] = {NULL, NULL};
+encoder_handler_t hEncoders[2] = {{0}, {0}};
 
 
 static bool pcnt_on_reach(pcnt_unit_handle_t unit, const pcnt_watch_event_data_t *edata, void *user_ctx)
@@ -327,11 +319,12 @@ static void example_lvgl_port_task(void *arg)
 }
 
 //zadatak za citanje enkodera
-void encoder_handler_task(void *param, encoder_args args)
-{
+void encoder_handler_task(void *arg){
     ESP_LOGI(encoder, "ulaz_u_task");
 
 	static int pulse_count = 5000;
+
+    int index = *(int*)arg;
 
 	int static prev_pulse_count = 0;
 
@@ -342,11 +335,12 @@ void encoder_handler_task(void *param, encoder_args args)
 	bool encoder_direction = 0;
 
 	static bool negative_pulse_falg = false;
-
     ESP_LOGI(encoder, "prije_struct");
 
-    pcnt_unit_handle_t encoder_pcnt = args.encoder;
-    encoder_handler_t hEncoder = args.hEncoder;
+    ESP_LOGI(encoder, "index: %d", index);
+        ESP_LOGI(encoder, "poslje_struct");
+
+    encoder_handler_t hEncoder = hEncoders[index];
 
 
 
@@ -356,7 +350,7 @@ void encoder_handler_task(void *param, encoder_args args)
     while (1)
     {
 
-        pcnt_unit_get_count(encoder_pcnt, &pulse_count);
+        pcnt_unit_get_count(encoders[index], &pulse_count);
              
 
         if(pulse_count < -1  || (negative_pulse_falg == true && pulse_count == 0))
@@ -534,15 +528,12 @@ void app_main(void)
 #endif
     //tu treba ubaciti inicijalizacijski kod za enkoder
     ESP_LOGI(TAG, "Init ENCODER1");
-    encoder_init(main_encoder_cb, &encoder1, &hEncoder1, EXAMPLE_ENCODER1_CLK, EXAMPLE_ENCODER1_DT, EXAMPLE_ENCODER1_BTN);
+    encoder_init(main_encoder_cb, &encoders[0], &hEncoders[0], EXAMPLE_ENCODER1_CLK, EXAMPLE_ENCODER1_DT, EXAMPLE_ENCODER1_BTN);
 
-    encoder_args encoder1_args = {
-        .encoder = encoder1,
-        .hEncoder = hEncoder1
-    };
         ESP_LOGI(TAG, "Create ENCODER1 task");
 
-    xTaskCreate(encoder_handler_task, "ENCODER1", 1*1024, &encoder1_args, 1, NULL);
+    int index = 0;
+    xTaskCreate(encoder_handler_task, "ENCODER1", 1*1024, &index /*index od encodera*/, 1, NULL);
 
 
     lvgl_mux = xSemaphoreCreateRecursiveMutex();

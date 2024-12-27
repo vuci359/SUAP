@@ -16,3 +16,5 @@ ESP32 has 6 strapping pins:
 • GPIO4: internal pull-down
 • MTDO/GPIO15: internal pull-up
 • GPIO5: internal pull-up
+
+enkoderi koriste brojač impulsa
