@@ -113,20 +113,20 @@ static bool example_pcnt_on_reach(pcnt_unit_handle_t unit, const pcnt_watch_even
     return (high_task_wakeup == pdTRUE);
 }
 
-void encoder_init(void* callback, int index, pcnt_unit_handle_t *pcnt_unit, int gpio_CLK, int gpio_DT, int gpio_BTN)
+void encoder_init(void* callback, int index, int gpio_CLK, int gpio_DT, int gpio_BTN)
 {
     ESP_LOGI(TAG, "install pcnt unit");
     pcnt_unit_config_t unit_config = {
         .high_limit = EXAMPLE_PCNT_HIGH_LIMIT,
         .low_limit = EXAMPLE_PCNT_LOW_LIMIT,
     };
-    ESP_ERROR_CHECK(pcnt_new_unit(&unit_config, &pcnt_unit));
+    ESP_ERROR_CHECK(pcnt_new_unit(&unit_config, &encoders[index]));
 
     ESP_LOGI(TAG, "set glitch filter");
     pcnt_glitch_filter_config_t filter_config = {
         .max_glitch_ns = 1000,
     };
-    ESP_ERROR_CHECK(pcnt_unit_set_glitch_filter(pcnt_unit, &filter_config));
+    ESP_ERROR_CHECK(pcnt_unit_set_glitch_filter(encoders[index], &filter_config));
 
     ESP_LOGI(TAG, "install pcnt channels");
     pcnt_chan_config_t chan_a_config = {
@@ -134,13 +134,13 @@ void encoder_init(void* callback, int index, pcnt_unit_handle_t *pcnt_unit, int 
         .level_gpio_num = gpio_DT,
     };
     pcnt_channel_handle_t pcnt_chan_a = NULL;
-    ESP_ERROR_CHECK(pcnt_new_channel(pcnt_unit, &chan_a_config, &pcnt_chan_a));
+    ESP_ERROR_CHECK(pcnt_new_channel(encoders[index], &chan_a_config, &pcnt_chan_a));
     pcnt_chan_config_t chan_b_config = {
         .edge_gpio_num = gpio_DT,
         .level_gpio_num = gpio_CLK,
     };
     pcnt_channel_handle_t pcnt_chan_b = NULL;
-    ESP_ERROR_CHECK(pcnt_new_channel(pcnt_unit, &chan_b_config, &pcnt_chan_b));
+    ESP_ERROR_CHECK(pcnt_new_channel(encoders[index], &chan_b_config, &pcnt_chan_b));
 
     ESP_LOGI(TAG, "set edge and level actions for pcnt channels");
     ESP_ERROR_CHECK(pcnt_channel_set_edge_action(pcnt_chan_a, PCNT_CHANNEL_EDGE_ACTION_DECREASE, PCNT_CHANNEL_EDGE_ACTION_INCREASE));
@@ -151,20 +151,20 @@ void encoder_init(void* callback, int index, pcnt_unit_handle_t *pcnt_unit, int 
     ESP_LOGI(TAG, "add watch points and register callbacks");
     int watch_points[] = {EXAMPLE_PCNT_LOW_LIMIT, -50, 0, 50, EXAMPLE_PCNT_HIGH_LIMIT};
     for (size_t i = 0; i < sizeof(watch_points) / sizeof(watch_points[0]); i++) {
-        ESP_ERROR_CHECK(pcnt_unit_add_watch_point(pcnt_unit, watch_points[i]));
+        ESP_ERROR_CHECK(pcnt_unit_add_watch_point(encoders[index], watch_points[i]));
     }
     pcnt_event_callbacks_t cbs = {
         .on_reach = example_pcnt_on_reach,
     };
     queues[index] = xQueueCreate(10, sizeof(int));
-    ESP_ERROR_CHECK(pcnt_unit_register_event_callbacks(pcnt_unit, &cbs, queues[index]));
+    ESP_ERROR_CHECK(pcnt_unit_register_event_callbacks(encoders[index], &cbs, queues[index]));
 
     ESP_LOGI(TAG, "enable pcnt unit");
-    ESP_ERROR_CHECK(pcnt_unit_enable(pcnt_unit));
+    ESP_ERROR_CHECK(pcnt_unit_enable(encoders[index]));
     ESP_LOGI(TAG, "clear pcnt unit");
-    ESP_ERROR_CHECK(pcnt_unit_clear_count(pcnt_unit));
+    ESP_ERROR_CHECK(pcnt_unit_clear_count(encoders[index]));
     ESP_LOGI(TAG, "start pcnt unit");
-    ESP_ERROR_CHECK(pcnt_unit_start(pcnt_unit));
+    ESP_ERROR_CHECK(pcnt_unit_start(encoders[index]));
 
 #if CONFIG_EXAMPLE_WAKE_UP_LIGHT_SLEEP
     // EC11 channel output high level in normal state, so we set "low level" to wake up the chip
@@ -469,11 +469,11 @@ void app_main(void)
     //tu treba ubaciti inicijalizacijski kod za enkoder
     int index = 0;
     ESP_LOGI(TAG, "Init ENCODER%d", index);
-    encoder_init(main_encoder_cb, index, &encoders[index], EXAMPLE_ENCODER1_CLK, EXAMPLE_ENCODER1_DT, EXAMPLE_ENCODER1_BTN);
+    encoder_init(main_encoder_cb, index, EXAMPLE_ENCODER1_CLK, EXAMPLE_ENCODER1_DT, EXAMPLE_ENCODER1_BTN);
 
         ESP_LOGI(TAG, "Create ENCODER%d task", index);
 
-    xTaskCreate(encoder_handler_task, "ENCODER1", 1*1024, &index /*index od encodera*/, 2, NULL);
+    xTaskCreate(encoder_handler_task, "ENCODER1", 2*1024, &index /*index od encodera*/, 2, NULL);
 
 
     lvgl_mux = xSemaphoreCreateRecursiveMutex();
