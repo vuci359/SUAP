@@ -329,7 +329,7 @@ void encoder_handler_task(void *arg){
             ESP_LOGI(TAG, "Pulse count: %d", pulse_count);
         }
 
-        vTaskDelay(200/portTICK_PERIOD_MS);
+        vTaskDelay(50/portTICK_PERIOD_MS);
     }
 }
 
