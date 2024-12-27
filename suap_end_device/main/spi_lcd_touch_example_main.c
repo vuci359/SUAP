@@ -8,6 +8,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/semphr.h"
+#include "freertos/queue.h"
 #include "esp_timer.h"
 #include "esp_lcd_panel_io.h"
 #include "esp_lcd_panel_vendor.h"
@@ -46,8 +47,8 @@ static const char *TAG = "example";
 
 #define ENCODER_MAX_WHATCHPIONT_COINT 100
 
-#define EXAMPLE_PCNT_HIGH_LIMIT 50
-#define EXAMPLE_PCNT_LOW_LIMIT  -50
+#define EXAMPLE_PCNT_HIGH_LIMIT 100
+#define EXAMPLE_PCNT_LOW_LIMIT  -100
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////// Please update the following configuration according to your LCD spec //////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -100,10 +101,10 @@ static void main_encoder_cb(uint32_t knobPosition){
 
 
 pcnt_unit_handle_t encoders[2] = {NULL, NULL};
-encoder_handler_t hEncoders[2] = {{0}, {0}};
+QueueHandle_t queues[2] = {NULL, NULL};
 
 
-static bool pcnt_on_reach(pcnt_unit_handle_t unit, const pcnt_watch_event_data_t *edata, void *user_ctx)
+static bool example_pcnt_on_reach(pcnt_unit_handle_t unit, const pcnt_watch_event_data_t *edata, void *user_ctx)
 {
     BaseType_t high_task_wakeup;
     QueueHandle_t queue = (QueueHandle_t)user_ctx;
@@ -112,30 +113,22 @@ static bool pcnt_on_reach(pcnt_unit_handle_t unit, const pcnt_watch_event_data_t
     return (high_task_wakeup == pdTRUE);
 }
 
-void encoder_init(void* callback, pcnt_unit_handle_t *pcnt_unit, encoder_handler_t *hEncoder, int gpio_CLK, int gpio_DT, int gpio_BTN)
+void encoder_init(void* callback, int index, pcnt_unit_handle_t *pcnt_unit, int gpio_CLK, int gpio_DT, int gpio_BTN)
 {
-    ESP_LOGI(encoder, "install pcnt unit");
+    ESP_LOGI(TAG, "install pcnt unit");
     pcnt_unit_config_t unit_config = {
         .high_limit = EXAMPLE_PCNT_HIGH_LIMIT,
         .low_limit = EXAMPLE_PCNT_LOW_LIMIT,
     };
-
-    gpio_config_t knob_button_config = {
-        .mode = GPIO_MODE_INPUT,
-        .pin_bit_mask = 1ULL << gpio_BTN
-    };
-    ESP_ERROR_CHECK(gpio_config(&knob_button_config));
-
-
     ESP_ERROR_CHECK(pcnt_new_unit(&unit_config, &pcnt_unit));
 
-    ESP_LOGI(encoder, "set glitch filter");
+    ESP_LOGI(TAG, "set glitch filter");
     pcnt_glitch_filter_config_t filter_config = {
         .max_glitch_ns = 1000,
     };
     ESP_ERROR_CHECK(pcnt_unit_set_glitch_filter(pcnt_unit, &filter_config));
 
-    ESP_LOGI(encoder, "install pcnt channels");
+    ESP_LOGI(TAG, "install pcnt channels");
     pcnt_chan_config_t chan_a_config = {
         .edge_gpio_num = gpio_CLK,
         .level_gpio_num = gpio_DT,
@@ -143,43 +136,42 @@ void encoder_init(void* callback, pcnt_unit_handle_t *pcnt_unit, encoder_handler
     pcnt_channel_handle_t pcnt_chan_a = NULL;
     ESP_ERROR_CHECK(pcnt_new_channel(pcnt_unit, &chan_a_config, &pcnt_chan_a));
     pcnt_chan_config_t chan_b_config = {
-        .edge_gpio_num = gpio_CLK,
-        .level_gpio_num = gpio_DT,
+        .edge_gpio_num = gpio_DT,
+        .level_gpio_num = gpio_CLK,
     };
     pcnt_channel_handle_t pcnt_chan_b = NULL;
     ESP_ERROR_CHECK(pcnt_new_channel(pcnt_unit, &chan_b_config, &pcnt_chan_b));
 
-    ESP_LOGI(encoder, "set edge and level actions for pcnt channels");
+    ESP_LOGI(TAG, "set edge and level actions for pcnt channels");
     ESP_ERROR_CHECK(pcnt_channel_set_edge_action(pcnt_chan_a, PCNT_CHANNEL_EDGE_ACTION_DECREASE, PCNT_CHANNEL_EDGE_ACTION_INCREASE));
     ESP_ERROR_CHECK(pcnt_channel_set_level_action(pcnt_chan_a, PCNT_CHANNEL_LEVEL_ACTION_KEEP, PCNT_CHANNEL_LEVEL_ACTION_INVERSE));
     ESP_ERROR_CHECK(pcnt_channel_set_edge_action(pcnt_chan_b, PCNT_CHANNEL_EDGE_ACTION_INCREASE, PCNT_CHANNEL_EDGE_ACTION_DECREASE));
     ESP_ERROR_CHECK(pcnt_channel_set_level_action(pcnt_chan_b, PCNT_CHANNEL_LEVEL_ACTION_KEEP, PCNT_CHANNEL_LEVEL_ACTION_INVERSE));
 
-    ESP_LOGI(encoder, "add watch points and register callbacks");
-
-
-    int watch_points[] = {-50,-40,-30};
-
-//    memcpy(hEncoder.whatchPoints, watch_points, sizeof(watch_points));
-
+    ESP_LOGI(TAG, "add watch points and register callbacks");
+    int watch_points[] = {EXAMPLE_PCNT_LOW_LIMIT, -50, 0, 50, EXAMPLE_PCNT_HIGH_LIMIT};
     for (size_t i = 0; i < sizeof(watch_points) / sizeof(watch_points[0]); i++) {
         ESP_ERROR_CHECK(pcnt_unit_add_watch_point(pcnt_unit, watch_points[i]));
     }
     pcnt_event_callbacks_t cbs = {
-        .on_reach = pcnt_on_reach,
+        .on_reach = example_pcnt_on_reach,
     };
-    hEncoder->queue = xQueueCreate(10, sizeof(int));
-    ESP_ERROR_CHECK(pcnt_unit_register_event_callbacks(pcnt_unit, &cbs, hEncoder->queue));
+    queues[index] = xQueueCreate(10, sizeof(int));
+    ESP_ERROR_CHECK(pcnt_unit_register_event_callbacks(pcnt_unit, &cbs, queues[index]));
 
-    ESP_LOGI(encoder, "enable pcnt unit");
+    ESP_LOGI(TAG, "enable pcnt unit");
     ESP_ERROR_CHECK(pcnt_unit_enable(pcnt_unit));
-    ESP_LOGI(encoder, "clear pcnt unit");
+    ESP_LOGI(TAG, "clear pcnt unit");
     ESP_ERROR_CHECK(pcnt_unit_clear_count(pcnt_unit));
-    ESP_LOGI(encoder, "start pcnt unit");
+    ESP_LOGI(TAG, "start pcnt unit");
     ESP_ERROR_CHECK(pcnt_unit_start(pcnt_unit));
 
-    //External callback register.
-    hEncoder->callback = callback;
+#if CONFIG_EXAMPLE_WAKE_UP_LIGHT_SLEEP
+    // EC11 channel output high level in normal state, so we set "low level" to wake up the chip
+    ESP_ERROR_CHECK(gpio_wakeup_enable(gpio_CLK, GPIO_INTR_LOW_LEVEL));
+    ESP_ERROR_CHECK(esp_sleep_enable_gpio_wakeup());
+    ESP_ERROR_CHECK(esp_light_sleep_start());
+#endif
 }
 
 
@@ -322,74 +314,22 @@ static void example_lvgl_port_task(void *arg)
 void encoder_handler_task(void *arg){
     ESP_LOGI(encoder, "ulaz_u_task");
 
-	static int pulse_count = 5000;
-
     int index = *(int*)arg;
 
-	int static prev_pulse_count = 0;
-
-	const uint8_t pulse_offest = 50;
-
-	const uint8_t rotary_step = 4;
-
-	bool encoder_direction = 0;
-
-	static bool negative_pulse_falg = false;
-    ESP_LOGI(encoder, "prije_struct");
-
     ESP_LOGI(encoder, "index: %d", index);
-        ESP_LOGI(encoder, "poslje_struct");
 
-    encoder_handler_t hEncoder = hEncoders[index];
-
-
-
-    ESP_LOGI(encoder, "prije_while");
-
-
-    while (1)
-    {
-
-        pcnt_unit_get_count(encoders[index], &pulse_count);
-             
-
-        if(pulse_count < -1  || (negative_pulse_falg == true && pulse_count == 0))
-        {
-        	negative_pulse_falg = true;
-        }
-        else
-        {
-        	negative_pulse_falg = false;
+	// Report counter value
+    int pulse_count = 0;
+    int event_count = 0;
+    while (1) {
+        if (xQueueReceive(queues[index], &event_count, pdMS_TO_TICKS(1000))) {
+            ESP_LOGI(TAG, "Watch point event, count: %d", event_count);
+        } else {
+            ESP_ERROR_CHECK(pcnt_unit_get_count(encoders[index], &pulse_count));
+            ESP_LOGI(TAG, "Pulse count: %d", pulse_count);
         }
 
-        pulse_count = pulse_count > 0 ? pulse_count : pulse_count * -1;
-
-        if((pulse_count - prev_pulse_count >= rotary_step) || (pulse_count - prev_pulse_count <= rotary_step * -1))
-        {
-
-        	if(negative_pulse_falg)
-        	{
-        		encoder_direction = pulse_count > prev_pulse_count ? false : true;
-
-        		ESP_LOGI(encoder, "negative");
-        	}
-        	else
-        	{
-        		encoder_direction = pulse_count > prev_pulse_count ? true : false;
-        		ESP_LOGI(encoder, "Positive");
-        	}
-        	
-        	hEncoder.callback(encoder_direction);
-
-           // hEncoder.callback(pulse_count + pulse_offest);
-
-            prev_pulse_count = pulse_count;
-
-            ESP_LOGI(encoder, "pulse count %d , direction %d", pulse_count, encoder_direction);
-        }
-
-
-        vTaskDelay(50/portTICK_PERIOD_MS);
+        vTaskDelay(200/portTICK_PERIOD_MS);
     }
 }
 
@@ -527,13 +467,13 @@ void app_main(void)
     lv_indev_drv_register(&indev_drv);
 #endif
     //tu treba ubaciti inicijalizacijski kod za enkoder
-    ESP_LOGI(TAG, "Init ENCODER1");
-    encoder_init(main_encoder_cb, &encoders[0], &hEncoders[0], EXAMPLE_ENCODER1_CLK, EXAMPLE_ENCODER1_DT, EXAMPLE_ENCODER1_BTN);
-
-        ESP_LOGI(TAG, "Create ENCODER1 task");
-
     int index = 0;
-    xTaskCreate(encoder_handler_task, "ENCODER1", 1*1024, &index /*index od encodera*/, 1, NULL);
+    ESP_LOGI(TAG, "Init ENCODER%d", index);
+    encoder_init(main_encoder_cb, index, &encoders[index], EXAMPLE_ENCODER1_CLK, EXAMPLE_ENCODER1_DT, EXAMPLE_ENCODER1_BTN);
+
+        ESP_LOGI(TAG, "Create ENCODER%d task", index);
+
+    xTaskCreate(encoder_handler_task, "ENCODER1", 1*1024, &index /*index od encodera*/, 2, NULL);
 
 
     lvgl_mux = xSemaphoreCreateRecursiveMutex();
