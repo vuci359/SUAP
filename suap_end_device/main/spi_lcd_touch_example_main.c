@@ -103,20 +103,23 @@ static void main_encoder_cb(uint32_t knobPosition){
 
 pcnt_unit_handle_t encoders[2] = {NULL, NULL};
 QueueHandle_t queues[2] = {NULL, NULL};
-int encoderDiff[2] = {0, 0};
+int enc_pulse_old[2] = {0, 0};
+int enc_pulse_count[2] = {0, 0};
 bool enc_pressed[2] = {false, false};
 
 void encoder1_read(lv_indev_drv_t * drv, lv_indev_data_t*data){
-  data->enc_diff = encoderDiff[0];
+  data->enc_diff = pcnt_unit_get_count(encoders[0], &enc_pulse_count[0]) - enc_pulse_old[0];
   if(enc_pressed[0]) data->state = LV_INDEV_STATE_PRESSED;
   else data->state = LV_INDEV_STATE_RELEASED;
    // printf("krepal1\n");
+   enc_pulse_old[0] = enc_pulse_count[0];
 }
 void encoder2_read(lv_indev_drv_t * drv, lv_indev_data_t*data){
-  data->enc_diff = encoderDiff[1];
+  data->enc_diff = pcnt_unit_get_count(encoders[1], &enc_pulse_count[1]) - enc_pulse_old[1];
   if(enc_pressed[1]) data->state = LV_INDEV_STATE_PRESSED;
   else data->state = LV_INDEV_STATE_RELEASED;
  //   printf("krepal2\n");
+    enc_pulse_old[1] = enc_pulse_count[1];
 
 }
 
@@ -367,7 +370,6 @@ void encoder_handler_task(void *arg){
         }else if(pulse_count > previous_pulse_count){
 
         }
-        encoderDiff[index] = pulse_count - previous_pulse_count;
         previous_pulse_count = pulse_count;
         vTaskDelay(50/portTICK_PERIOD_MS);
     }
@@ -511,12 +513,12 @@ void app_main(void)
     ESP_LOGI(TAG, "Init ENCODER%d", index0);
     encoder_init(main_encoder_cb, index0, EXAMPLE_ENCODER1_CLK, EXAMPLE_ENCODER1_DT, EXAMPLE_ENCODER1_BTN);
     ESP_LOGI(TAG, "Create ENCODER%d task", index0);
-    xTaskCreate(encoder_handler_task, "ENCODER1", 2*1024, &index0 /*index od encodera*/, 1, NULL);
+  //  xTaskCreate(encoder_handler_task, "ENCODER1", 2*1024, &index0 /*index od encodera*/, 1, NULL);
     int index1 = 1;
     ESP_LOGI(TAG, "Init ENCODER%d", index1);
     encoder_init(main_encoder_cb, index1, EXAMPLE_ENCODER2_CLK, EXAMPLE_ENCODER2_DT, EXAMPLE_ENCODER2_BTN);
     ESP_LOGI(TAG, "Create ENCODER%d task", index1);
-    xTaskCreate(encoder_handler_task, "ENCODER2", 2*1024, &index1 /*index od encodera*/, 1, NULL);
+  //  xTaskCreate(encoder_handler_task, "ENCODER2", 2*1024, &index1 /*index od encodera*/, 1, NULL);
 
     //stavljaje menija u grupu
     static lv_indev_drv_t encoder1d; //driver mora biti static
