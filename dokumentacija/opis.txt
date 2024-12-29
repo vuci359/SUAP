@@ -2,7 +2,7 @@ LVGL - library za grafičko sučelje
 
 spi_lcd_touch - primjer koda na kojem se bazira programsko rješenje
 
-esp_lcd_ili9341 - drivar za display
+esp_lcd_ili9341 - driver za display
 
 spi_lcd_touch_example_main - programski kod za inicijalizaciju i pokretanje grafičkog sučelja
 lvgl_demo_ui - programski kod za grafičko sučelje
@@ -17,4 +17,7 @@ ESP32 has 6 strapping pins:
 • MTDO/GPIO15: internal pull-up
 • GPIO5: internal pull-up
 
-enkoderi koriste brojač impulsa
+enkoderi koriste brojač impulsa, kratica PCNT
+neke verzije ESP32 nemaju hardverski PCNT, npr. c linija
+
+LVGL zahtjeva instanciranje drivera pa instanciranje uređaja

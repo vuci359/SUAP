@@ -9,7 +9,8 @@
 #include "lvgl.h"
 
 
-void example_lvgl_demo_ui(lv_disp_t *disp, lv_indev_t *encoder1, lv_indev_t *encoder2)
+
+void example_lvgl_demo_ui(lv_disp_t *disp, lv_indev_t *encoder1i, lv_indev_t *encoder2i)
 {
     lv_obj_t *scr = lv_disp_get_scr_act(disp);
     lv_group_t * g = lv_group_create();
@@ -46,7 +47,15 @@ void example_lvgl_demo_ui(lv_disp_t *disp, lv_indev_t *encoder1, lv_indev_t *enc
     //stavljaje menija u grupu
     lv_group_add_obj(g, main_page);
     lv_group_add_obj(g, sub_page);
-    lv_indev_set_group(encoder1, g); //mapiranje ulaznog uređaja na grupu
+    lv_indev_set_group(encoder1i, g); //mapiranje ulaznog uređaja na grupu
+    lv_indev_set_group(encoder2i, g); //mapiranje ulaznog uređaja na grupu
+
+    lv_obj_add_flag(cont, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_clear_flag(cont, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_add_flag(cont, LV_OBJ_FLAG_SCROLL_ON_FOCUS);
+       // cont = create_slider(main_page, "Kd", 0, 150, 120);
 
     lv_menu_set_page(menu, main_page);
+
+
 }

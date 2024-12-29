@@ -20,6 +20,7 @@
 #include "esp_log.h"
 #include "lvgl.h"
 #include "stdbool.h"
+#include "iot_button.h"
 
 #if CONFIG_EXAMPLE_LCD_CONTROLLER_ILI9341
 #include "esp_lcd_ili9341.h"
@@ -102,6 +103,22 @@ static void main_encoder_cb(uint32_t knobPosition){
 
 pcnt_unit_handle_t encoders[2] = {NULL, NULL};
 QueueHandle_t queues[2] = {NULL, NULL};
+int encoderDiff[2] = {0, 0};
+bool enc_pressed[2] = {false, false};
+
+void encoder1_read(lv_indev_drv_t * drv, lv_indev_data_t*data){
+  data->enc_diff = encoderDiff[0];
+  if(enc_pressed[0]) data->state = LV_INDEV_STATE_PRESSED;
+  else data->state = LV_INDEV_STATE_RELEASED;
+   // printf("krepal1\n");
+}
+void encoder2_read(lv_indev_drv_t * drv, lv_indev_data_t*data){
+  data->enc_diff = encoderDiff[1];
+  if(enc_pressed[1]) data->state = LV_INDEV_STATE_PRESSED;
+  else data->state = LV_INDEV_STATE_RELEASED;
+ //   printf("krepal2\n");
+
+}
 
 
 static bool example_pcnt_on_reach(pcnt_unit_handle_t unit, const pcnt_watch_event_data_t *edata, void *user_ctx)
@@ -172,6 +189,22 @@ void encoder_init(void* callback, int index, int gpio_CLK, int gpio_DT, int gpio
     ESP_ERROR_CHECK(esp_sleep_enable_gpio_wakeup());
     ESP_ERROR_CHECK(esp_light_sleep_start());
 #endif
+
+    // create gpio button
+button_config_t gpio_btn_cfg = {
+    .type = BUTTON_TYPE_GPIO,
+    .long_press_time = CONFIG_BUTTON_LONG_PRESS_TIME_MS,
+    .short_press_time = CONFIG_BUTTON_SHORT_PRESS_TIME_MS,
+    .gpio_button_config = {
+        .gpio_num = gpio_BTN,
+        .active_level = 0,
+    },
+};
+
+button_handle_t gpio_btn = iot_button_create(&gpio_btn_cfg);
+if(NULL == gpio_btn) {
+    ESP_LOGE(TAG, "Button create failed");
+}
 }
 
 
@@ -179,7 +212,7 @@ void encoder_init(void* callback, int index, int gpio_CLK, int gpio_DT, int gpio
 esp_lcd_touch_handle_t tp = NULL;
 #endif
 
-extern void example_lvgl_demo_ui(lv_disp_t *disp);
+extern void example_lvgl_demo_ui(lv_disp_t *disp, lv_indev_t *encoder1, lv_indev_t *encoder2);
 
 static bool example_notify_lvgl_flush_ready(esp_lcd_panel_io_handle_t panel_io, esp_lcd_panel_io_event_data_t *edata, void *user_ctx)
 {
@@ -320,6 +353,7 @@ void encoder_handler_task(void *arg){
 
 	// Report counter value
     int pulse_count = 0;
+    int previous_pulse_count = pulse_count;
     int event_count = 0;
     while (1) {
         if (xQueueReceive(queues[index], &event_count, pdMS_TO_TICKS(1000))) {
@@ -328,7 +362,13 @@ void encoder_handler_task(void *arg){
             ESP_ERROR_CHECK(pcnt_unit_get_count(encoders[index], &pulse_count));
             ESP_LOGI(TAG, "Pulse count: %d", pulse_count);
         }
+        if(pulse_count > previous_pulse_count){
 
+        }else if(pulse_count > previous_pulse_count){
+
+        }
+        encoderDiff[index] = pulse_count - previous_pulse_count;
+        previous_pulse_count = pulse_count;
         vTaskDelay(50/portTICK_PERIOD_MS);
     }
 }
@@ -467,14 +507,28 @@ void app_main(void)
     lv_indev_drv_register(&indev_drv);
 #endif
     //tu treba ubaciti inicijalizacijski kod za enkoder
-    int index = 0;
-    ESP_LOGI(TAG, "Init ENCODER%d", index);
-    encoder_init(main_encoder_cb, index, EXAMPLE_ENCODER1_CLK, EXAMPLE_ENCODER1_DT, EXAMPLE_ENCODER1_BTN);
+    int index0 = 0;
+    ESP_LOGI(TAG, "Init ENCODER%d", index0);
+    encoder_init(main_encoder_cb, index0, EXAMPLE_ENCODER1_CLK, EXAMPLE_ENCODER1_DT, EXAMPLE_ENCODER1_BTN);
+    ESP_LOGI(TAG, "Create ENCODER%d task", index0);
+    xTaskCreate(encoder_handler_task, "ENCODER1", 2*1024, &index0 /*index od encodera*/, 1, NULL);
+    int index1 = 1;
+    ESP_LOGI(TAG, "Init ENCODER%d", index1);
+    encoder_init(main_encoder_cb, index1, EXAMPLE_ENCODER2_CLK, EXAMPLE_ENCODER2_DT, EXAMPLE_ENCODER2_BTN);
+    ESP_LOGI(TAG, "Create ENCODER%d task", index1);
+    xTaskCreate(encoder_handler_task, "ENCODER2", 2*1024, &index1 /*index od encodera*/, 1, NULL);
 
-        ESP_LOGI(TAG, "Create ENCODER%d task", index);
-
-    xTaskCreate(encoder_handler_task, "ENCODER1", 2*1024, &index /*index od encodera*/, 2, NULL);
-
+    //stavljaje menija u grupu
+    static lv_indev_drv_t encoder1d; //driver mora biti static
+    static lv_indev_drv_t encoder2d; //driver mora biti static
+    lv_indev_drv_init(&encoder1d);
+    lv_indev_drv_init(&encoder2d);
+    encoder1d.type = LV_INDEV_TYPE_ENCODER;
+    encoder1d.read_cb = encoder1_read;
+    encoder2d.type = LV_INDEV_TYPE_ENCODER;
+    encoder2d.read_cb = encoder2_read;
+    lv_indev_t *encoder1i = lv_indev_drv_register(&encoder1d);
+    lv_indev_t *encoder2i = lv_indev_drv_register(&encoder2d);
 
     lvgl_mux = xSemaphoreCreateRecursiveMutex();
     assert(lvgl_mux);
@@ -484,7 +538,7 @@ void app_main(void)
     ESP_LOGI(TAG, "Display LVGL Meter Widget");
     // Lock the mutex due to the LVGL APIs are not thread-safe
     if (example_lvgl_lock(-1)) {
-        example_lvgl_demo_ui(disp);
+        example_lvgl_demo_ui(disp, encoder1i, encoder2i);
         // Release the mutex
         example_lvgl_unlock();
     }

@@ -20,6 +20,7 @@
         "esp_lcd_ili9341.h": "c",
         "esp_lcd_gc9a01.h": "c",
         "esp_lcd_panel_st7789.h": "c",
-        "esp_lcd_panel_vendor.h": "c"
+        "esp_lcd_panel_vendor.h": "c",
+        "lvgl.h": "c"
     }
 }
