@@ -7,8 +7,32 @@
 // This demo UI is adapted from LVGL official example: https://docs.lvgl.io/master/widgets/extra/meter.html#simple-meter
 
 #include "lvgl.h"
+//#include "lv_menu.h"
 
+//#include "../../lv_examples.h"
+//#if LV_USE_MENU && LV_USE_MSGBOX && LV_BUILD_EXAMPLES
 
+static uint8_t button_counter = 0;
+static lv_obj_t * count_label;
+
+static void event_handler(lv_event_t * e)
+{
+  lv_event_code_t code = lv_event_get_code(e);
+
+  if( (code == LV_EVENT_CLICKED) || (code ==  LV_EVENT_LONG_PRESSED_REPEAT) )
+  {
+    if ( code == LV_EVENT_CLICKED)
+      LV_LOG_USER("Click Event");
+    else if( code == LV_EVENT_LONG_PRESSED_REPEAT )
+      LV_LOG_USER("Press and Hold Event");
+    button_counter++;
+    lv_label_set_text_fmt(count_label, "Count: %d", button_counter);
+  }
+  else if(code == LV_EVENT_VALUE_CHANGED)
+  {
+    LV_LOG_USER("Toggle Event");
+  }
+}
 
 void example_lvgl_demo_ui(lv_disp_t *disp, lv_indev_t *encoder1i, lv_indev_t *encoder2i)
 {
@@ -25,37 +49,29 @@ void example_lvgl_demo_ui(lv_disp_t *disp, lv_indev_t *encoder1i, lv_indev_t *en
     /*Create a sub page*/
     lv_obj_t * sub_page = lv_menu_page_create(menu, NULL);
 
-    cont = lv_menu_cont_create(sub_page);
-    label = lv_label_create(cont);
-    lv_label_set_text(label, "Hello, I am hiding here");
+  lv_obj_t * btn1 = lv_btn_create(lv_scr_act());
+  lv_obj_add_event_cb(btn1, event_handler, LV_EVENT_ALL, NULL);
+  lv_obj_align(btn1, LV_ALIGN_CENTER, 0, -10);
 
-    /*Create a main page*/
-    lv_obj_t * main_page = lv_menu_page_create(menu, NULL);
+  label = lv_label_create(btn1);
+  lv_label_set_text(label, "Button");
+  lv_obj_center(label);
 
-    cont = lv_menu_cont_create(main_page);
-    label = lv_label_create(cont);
-    lv_label_set_text(label, "Item 1");
+  count_label = lv_label_create(lv_scr_act());
+  lv_obj_align(count_label, LV_ALIGN_CENTER, 0, -60);
+  lv_label_set_text(count_label, "Counts: 0");
 
-    cont = lv_menu_cont_create(main_page);
-    label = lv_label_create(cont);
-    lv_label_set_text(label, "Item 2");
+  lv_obj_t * btn2 = lv_btn_create(lv_scr_act());
+  lv_obj_add_event_cb(btn2, event_handler, LV_EVENT_ALL, NULL);
+  lv_obj_align(btn2, LV_ALIGN_CENTER, 0, 40);
+  lv_obj_add_flag(btn2, LV_OBJ_FLAG_CHECKABLE);
+  lv_obj_set_height(btn2, LV_SIZE_CONTENT);
 
-    cont = lv_menu_cont_create(main_page);
-    label = lv_label_create(cont);
-    lv_label_set_text(label, "Item 3 (Click me!)");
-    lv_menu_set_load_page_event(menu, cont, sub_page);
-    //stavljaje menija u grupu
-    lv_group_add_obj(g, main_page);
-    lv_group_add_obj(g, sub_page);
-    lv_indev_set_group(encoder1i, g); //mapiranje ulaznog uređaja na grupu
-    lv_indev_set_group(encoder2i, g); //mapiranje ulaznog uređaja na grupu
-
-    lv_obj_add_flag(cont, LV_OBJ_FLAG_CLICKABLE);
-    lv_obj_clear_flag(cont, LV_OBJ_FLAG_SCROLLABLE);
-    lv_obj_add_flag(cont, LV_OBJ_FLAG_SCROLL_ON_FOCUS);
-       // cont = create_slider(main_page, "Kd", 0, 150, 120);
-
-    lv_menu_set_page(menu, main_page);
-
-
-}
+  label = lv_label_create(btn2);
+  lv_label_set_text(label, "Toggle");
+  lv_obj_center(label);
+  lv_group_add_obj(g, btn1);
+  lv_group_add_obj(g,btn2);
+  lv_indev_set_group(encoder1i, g);
+  
+  }
