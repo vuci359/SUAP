@@ -23,3 +23,4 @@ neke verzije ESP32 nemaju hardverski PCNT, npr. c linija
 LVGL zahtjeva instanciranje drivera pa instanciranje uređaja
 lvgl_indev_drv_t nije driver, nego je struktura podataka koja pamti podatke o vrsti ulaznog uređaja i referencu na funkciju koja iz drivera uzima podatke
 koristi se standardni ESP-ov driver za enkoder koji koristi PCNT hardverski brojač impulsa iz kojega izvlači broj impulsa za meni.
+u lvgl dokumentaciji fali opis za taj dio -> treba kopati po forumima

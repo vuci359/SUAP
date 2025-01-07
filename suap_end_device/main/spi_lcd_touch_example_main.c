@@ -105,18 +105,17 @@ pcnt_unit_handle_t encoders[2] = {NULL, NULL};
 QueueHandle_t queues[2] = {NULL, NULL};
 int enc_pulse_old[2] = {0, 0};
 int enc_pulse_count[2] = {0, 0};
-bool enc_pressed[2] = {false, false};
-
+button_handle_t gpio_btn[];
 void encoder1_read(lv_indev_drv_t * drv, lv_indev_data_t*data){
   data->enc_diff = pcnt_unit_get_count(encoders[0], &enc_pulse_count[0]) - enc_pulse_old[0];
-  if(enc_pressed[0]) data->state = LV_INDEV_STATE_PRESSED;
+  if(iot_button_get_event(gpio_btn[0]) == BUTTON_PRESS_DOWN) data->state = LV_INDEV_STATE_PRESSED;
   else data->state = LV_INDEV_STATE_RELEASED;
    // printf("krepal1\n");
    enc_pulse_old[0] = enc_pulse_count[0];
 }
 void encoder2_read(lv_indev_drv_t * drv, lv_indev_data_t*data){
   data->enc_diff = pcnt_unit_get_count(encoders[1], &enc_pulse_count[1]) - enc_pulse_old[1];
-  if(enc_pressed[1]) data->state = LV_INDEV_STATE_PRESSED;
+  if(iot_button_get_event(gpio_btn[0]) == BUTTON_PRESS_DOWN) data->state = LV_INDEV_STATE_PRESSED;
   else data->state = LV_INDEV_STATE_RELEASED;
  //   printf("krepal2\n");
     enc_pulse_old[1] = enc_pulse_count[1];
@@ -204,8 +203,8 @@ button_config_t gpio_btn_cfg = {
     },
 };
 
-button_handle_t gpio_btn = iot_button_create(&gpio_btn_cfg);
-if(NULL == gpio_btn) {
+gpio_btn[index] = iot_button_create(&gpio_btn_cfg);
+if(NULL == gpio_btn[index]) {
     ESP_LOGE(TAG, "Button create failed");
 }
 }
