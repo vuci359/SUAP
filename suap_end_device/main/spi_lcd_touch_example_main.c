@@ -107,7 +107,7 @@ int enc_pulse_old[2] = {0, 0};
 int enc_pulse_count[2] = {0, 0};
 button_handle_t gpio_btn[];
 void encoder1_read(lv_indev_drv_t * drv, lv_indev_data_t*data){
-  data->enc_diff = pcnt_unit_get_count(encoders[0], &enc_pulse_count[0]) - enc_pulse_old[0];
+  data->enc_diff = (pcnt_unit_get_count(encoders[0], &enc_pulse_count[0]) - enc_pulse_old[0]);
   if(iot_button_get_event(gpio_btn[0]) == BUTTON_PRESS_DOWN) data->state = LV_INDEV_STATE_PRESSED;
   else data->state = LV_INDEV_STATE_RELEASED;
    // printf("krepal1\n");
