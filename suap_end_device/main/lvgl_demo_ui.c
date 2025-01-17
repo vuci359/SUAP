@@ -14,6 +14,10 @@
 #include <stddef.h>
 #include <string.h>
 
+#define API_GET_URL "http://localhost:9090/api/v1/counter"
+
+#define API_POST_URL "http://localhost:9090/api/v1/counter"
+
 char *body_data = {"*"};
 
 esp_err_t client_event_http_handler(esp_http_client_event_handle_t evt)
@@ -56,16 +60,14 @@ esp_err_t client_event_http_handler(esp_http_client_event_handle_t evt)
 
 //primjer post funkcije
 //register_rest_function(CONFIG_REGISTRATION_URL_2, CONFIG_USER_NAME, CONFIG_USER_PASSWORD, "[\""CONFIG_ID_NAZIV"\"]");
-void register_rest_function(const char *URL, const char *USERNAME, const char *PASSWORD, char *body_string)
+char* register_rest_function(const char *URL, char *body_string)
 {
     esp_http_client_config_t config_post = {
         .url = URL,
         .method = HTTP_METHOD_POST,
         .cert_pem = NULL,
+        .user_data = body_data,
         .event_handler = client_event_http_handler,
-        .auth_type = HTTP_AUTH_TYPE_BASIC,
-        .username = USERNAME,
-        .password = PASSWORD
         };
         
     esp_http_client_handle_t client = esp_http_client_init(&config_post);
@@ -77,14 +79,24 @@ void register_rest_function(const char *URL, const char *USERNAME, const char *P
     //esp_http_client_set_header(client, "Authorisation", "Basic aW50c3R2X3NtYXJ0cGFya2luZzpmZlozUElnM2tqc3JoVU1S");
     esp_http_client_set_header(client, "Content-Type", "application/json");
     //esp_http_client_set_header(client, "Cache-Control", "no-cache");
-    esp_http_client_perform(client);
+    esp_err_t err = esp_http_client_perform(client);
+
+    if (err == ESP_OK) {
+        printf( "HTTP GET Status = %d, content_length = %"PRId64"\n",
+                esp_http_client_get_status_code(client),
+                esp_http_client_get_content_length(client));
+    } else {
+        printf("HTTP GET request failed: %s\n", esp_err_to_name(err));
+    }
+
     esp_http_client_cleanup(client);
+    return body_data;
 }
 
 //primjer get funkcije
 //get_rest_function(CONFIG_DATA_URL"?res="CONFIG_ID_NAZIV"&maxPayloadsPerResource=1", "res="CONFIG_ID_NAZIV"&maxPayloadsPerResource=1", CONFIG_USER_NAME, CONFIG_USER_PASSWORD)
 
-char* get_rest_function(const char *URL, const char *QUERY, const char *USERNAME, const char *PASSWORD)
+char* get_rest_function(const char *URL, const char *QUERY)
 {
 
 
@@ -94,9 +106,6 @@ char* get_rest_function(const char *URL, const char *QUERY, const char *USERNAME
         .method = HTTP_METHOD_GET,
         .cert_pem = NULL,
         .event_handler = client_event_http_handler,
-        .auth_type = HTTP_AUTH_TYPE_BASIC,
-        .username = USERNAME,
-        .password = PASSWORD,
         .transport_type = HTTP_TRANSPORT_OVER_TCP,
         .user_data = body_data,
         .buffer_size = 2048,
@@ -107,7 +116,7 @@ char* get_rest_function(const char *URL, const char *QUERY, const char *USERNAME
         
     esp_http_client_handle_t client = esp_http_client_init(&config_get);
 
-    esp_http_client_set_header(client, "Accept", "application/vnd.ericsson.m2m.output+json;version=1.0");
+    esp_http_client_set_header(client, "Accept", "application/json");
 
 // GET
     esp_err_t err = esp_http_client_perform(client);
@@ -134,6 +143,19 @@ char* get_rest_function(const char *URL, const char *QUERY, const char *USERNAME
 
 static uint8_t button_counter = 0;
 static lv_obj_t * count_label;
+lv_obj_t * mbox1;
+lv_group_t * g;
+lv_group_t * g2;
+
+static void mevent_cb(lv_event_t * e)
+{
+    lv_obj_t * btn = lv_event_get_target(e);
+    lv_obj_t * label = lv_obj_get_child(btn, 0);
+    LV_UNUSED(label);
+    LV_LOG_USER("Button %s clicked", lv_label_get_text(label));
+    lv_obj_del(mbox1);
+}
+
 
 static void event_handler(lv_event_t * e)
 {
@@ -154,11 +176,64 @@ static void event_handler(lv_event_t * e)
   }
 }
 
+static void get_event_handler(lv_event_t * e)
+{
+  lv_event_code_t code = lv_event_get_code(e);
+
+   if( (code == LV_EVENT_CLICKED) || (code ==  LV_EVENT_LONG_PRESSED_REPEAT) )
+  {
+    if ( code == LV_EVENT_CLICKED)
+      LV_LOG_USER("Click Event");
+    else if( code == LV_EVENT_LONG_PRESSED_REPEAT )
+      LV_LOG_USER("Press and Hold Event");
+     get_rest_function(API_GET_URL,"000");
+    button_counter = 335;
+    lv_label_set_text_fmt(count_label, "Count: %d", button_counter);
+  }
+  else if(code == LV_EVENT_VALUE_CHANGED)
+  {
+    LV_LOG_USER("Toggle Event");
+  }
+
+}
+
+static void post_event_handler(lv_event_t * e)
+{
+  lv_event_code_t code = lv_event_get_code(e);
+
+  if( (code == LV_EVENT_CLICKED) || (code ==  LV_EVENT_LONG_PRESSED_REPEAT) )
+  {
+    if ( code == LV_EVENT_CLICKED)
+      LV_LOG_USER("Click Event");
+    else if( code == LV_EVENT_LONG_PRESSED_REPEAT )
+      LV_LOG_USER("Press and Hold Event");
+     register_rest_function(API_GET_URL,"000");
+    button_counter = 335;
+    lv_label_set_text_fmt(count_label, "Count: %d", button_counter);
+
+       // static const char * btns[] ={"Apply", "Close", ""};
+
+    mbox1 = lv_msgbox_create(lv_layer_top(), "Hello", "This is a message box with two buttons.", NULL, true);
+    lv_obj_add_event_cb(mbox1, mevent_cb, LV_EVENT_VALUE_CHANGED, NULL);
+    lv_obj_center(mbox1);
+      lv_group_add_obj(g2,mbox1);
+      lv_group_add_obj(g2,lv_msgbox_get_close_btn(mbox1));
+
+
+  }
+  else if(code == LV_EVENT_VALUE_CHANGED)
+  {
+    LV_LOG_USER("Toggle Event");
+  }
+}
+
+
+
 void example_lvgl_demo_ui(lv_disp_t *disp, lv_indev_t *encoder1i, lv_indev_t *encoder2i)
 {
     lv_obj_t *scr = lv_disp_get_scr_act(disp);
-    lv_group_t * g = lv_group_create();
-    lv_group_t * g2 = lv_group_create();
+    g = lv_group_create();
+    g2 = lv_group_create();
 
     /*Create a menu object*/
     lv_obj_t * menu = lv_menu_create(scr);
@@ -167,6 +242,7 @@ void example_lvgl_demo_ui(lv_disp_t *disp, lv_indev_t *encoder1i, lv_indev_t *en
 
     lv_obj_t * cont;
     lv_obj_t * label;
+
 
     /*Create a sub page*/
     lv_obj_t * sub_page = lv_menu_page_create(menu, NULL);
@@ -198,7 +274,7 @@ void example_lvgl_demo_ui(lv_disp_t *disp, lv_indev_t *encoder1i, lv_indev_t *en
 
 
   lv_obj_t * btn1b = lv_btn_create(lv_scr_act());
-  lv_obj_add_event_cb(btn1b, event_handler, LV_EVENT_ALL, NULL); //promjeniti u handler za HTTP POST
+  lv_obj_add_event_cb(btn1b, post_event_handler, LV_EVENT_ALL, NULL); //promjeniti u handler za HTTP POST
   lv_obj_align(btn1b, LV_ALIGN_CENTER, 50, -10);
 
   label = lv_label_create(btn1b);
@@ -206,7 +282,7 @@ void example_lvgl_demo_ui(lv_disp_t *disp, lv_indev_t *encoder1i, lv_indev_t *en
   lv_obj_center(label);
 
   lv_obj_t * btn2b = lv_btn_create(lv_scr_act());
-  lv_obj_add_event_cb(btn2b, event_handler, LV_EVENT_ALL, NULL); //promjeniti u handler za HTTP GET
+  lv_obj_add_event_cb(btn2b, get_event_handler, LV_EVENT_ALL, NULL); //promjeniti u handler za HTTP GET
   lv_obj_align(btn2b, LV_ALIGN_CENTER, 50, 40);
 
   label = lv_label_create(btn2b);
