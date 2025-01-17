@@ -218,6 +218,7 @@ static void post_event_handler(lv_event_t * e)
     lv_obj_center(mbox1);
       lv_group_add_obj(g2,mbox1);
       lv_group_add_obj(g2,lv_msgbox_get_close_btn(mbox1));
+      lv_group_focus_obj(lv_msgbox_get_close_btn(mbox1));
 
 
   }
