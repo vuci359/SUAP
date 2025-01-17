@@ -7,6 +7,126 @@
 // This demo UI is adapted from LVGL official example: https://docs.lvgl.io/master/widgets/extra/meter.html#simple-meter
 
 #include "lvgl.h"
+#include "esp_transport_ssl.h"
+#include "esp_http_client.h"
+#include <stdio.h>
+#include <stdint.h>
+#include <stddef.h>
+#include <string.h>
+
+char *body_data = {"*"};
+
+esp_err_t client_event_http_handler(esp_http_client_event_handle_t evt)
+
+{
+    switch (evt->event_id)
+    {
+   case HTTP_EVENT_ERROR:
+            printf("HTTP_EVENT_ERROR\n");
+            break;
+        case HTTP_EVENT_ON_CONNECTED:
+            printf("HTTP_EVENT_ON_CONNECTED\n");
+            break;
+        case HTTP_EVENT_HEADER_SENT:
+            printf("HTTP_EVENT_HEADER_SENT\n");
+            break;
+        case HTTP_EVENT_ON_HEADER:
+            printf("HTTP_EVENT_ON_HEADER, key=%s, value=%s\n", evt->header_key, evt->header_value);
+            break;
+        case HTTP_EVENT_ON_DATA:
+            printf("HTTP_EVENT_ON_DATA, len=%d\n", evt->data_len);
+            if (!esp_http_client_is_chunked_response(evt->client)) {
+                // Write out data
+                printf("\t%.*s\n", evt->data_len, (char*)evt->data);
+                body_data = evt->data;
+            }
+
+            break;
+        case HTTP_EVENT_ON_FINISH:
+            printf("HTTP_EVENT_ON_FINISH\n");
+            break;
+        case HTTP_EVENT_DISCONNECTED:
+            printf("HTTP_EVENT_DISCONNECTED\n");
+            break;
+    default:
+        break;
+    }
+    return ESP_OK;
+}
+
+//primjer post funkcije
+//register_rest_function(CONFIG_REGISTRATION_URL_2, CONFIG_USER_NAME, CONFIG_USER_PASSWORD, "[\""CONFIG_ID_NAZIV"\"]");
+void register_rest_function(const char *URL, const char *USERNAME, const char *PASSWORD, char *body_string)
+{
+    esp_http_client_config_t config_post = {
+        .url = URL,
+        .method = HTTP_METHOD_POST,
+        .cert_pem = NULL,
+        .event_handler = client_event_http_handler,
+        .auth_type = HTTP_AUTH_TYPE_BASIC,
+        .username = USERNAME,
+        .password = PASSWORD
+        };
+        
+    esp_http_client_handle_t client = esp_http_client_init(&config_post);
+
+    char  *post_data = body_string;
+    
+    esp_http_client_set_post_field(client, post_data, strlen(post_data));
+    //tu se puniju headeri
+    //esp_http_client_set_header(client, "Authorisation", "Basic aW50c3R2X3NtYXJ0cGFya2luZzpmZlozUElnM2tqc3JoVU1S");
+    esp_http_client_set_header(client, "Content-Type", "application/json");
+    //esp_http_client_set_header(client, "Cache-Control", "no-cache");
+    esp_http_client_perform(client);
+    esp_http_client_cleanup(client);
+}
+
+//primjer get funkcije
+//get_rest_function(CONFIG_DATA_URL"?res="CONFIG_ID_NAZIV"&maxPayloadsPerResource=1", "res="CONFIG_ID_NAZIV"&maxPayloadsPerResource=1", CONFIG_USER_NAME, CONFIG_USER_PASSWORD)
+
+char* get_rest_function(const char *URL, const char *QUERY, const char *USERNAME, const char *PASSWORD)
+{
+
+
+
+    esp_http_client_config_t config_get = {
+        .url = URL,
+        .method = HTTP_METHOD_GET,
+        .cert_pem = NULL,
+        .event_handler = client_event_http_handler,
+        .auth_type = HTTP_AUTH_TYPE_BASIC,
+        .username = USERNAME,
+        .password = PASSWORD,
+        .transport_type = HTTP_TRANSPORT_OVER_TCP,
+        .user_data = body_data,
+        .buffer_size = 2048,
+       // .query = QUERY
+    };
+
+   // printf("%s\n", config_get.query);
+        
+    esp_http_client_handle_t client = esp_http_client_init(&config_get);
+
+    esp_http_client_set_header(client, "Accept", "application/vnd.ericsson.m2m.output+json;version=1.0");
+
+// GET
+    esp_err_t err = esp_http_client_perform(client);
+    
+
+    if (err == ESP_OK) {
+        printf( "HTTP GET Status = %d, content_length = %"PRId64"\n",
+                esp_http_client_get_status_code(client),
+                esp_http_client_get_content_length(client));
+    } else {
+        printf("HTTP GET request failed: %s\n", esp_err_to_name(err));
+    }
+    esp_http_client_cleanup(client);
+
+    return body_data;
+
+}
+
+
 //#include "lv_menu.h"
 
 //#include "../../lv_examples.h"
