@@ -7,16 +7,18 @@
 // This demo UI is adapted from LVGL official example: https://docs.lvgl.io/master/widgets/extra/meter.html#simple-meter
 
 #include "lvgl.h"
-#include "esp_transport_ssl.h"
+//#include "esp_transport_ssl.h"
 #include "esp_http_client.h"
 #include <stdio.h>
 #include <stdint.h>
 #include <stddef.h>
 #include <string.h>
 
-#define API_GET_URL "http://localhost:9090/api/v1/counter"
+#define SERVER_IP "192.168.88.252:5023"
 
-#define API_POST_URL "http://localhost:9090/api/v1/counter"
+#define API_GET_URL "http://" SERVER_IP "/api/SuapApi"
+
+#define API_POST_URL "http://"SERVER_IP"/api/SuapApi"
 
 char *body_data = {"*"};
 
@@ -60,7 +62,7 @@ esp_err_t client_event_http_handler(esp_http_client_event_handle_t evt)
 
 //primjer post funkcije
 //register_rest_function(CONFIG_REGISTRATION_URL_2, CONFIG_USER_NAME, CONFIG_USER_PASSWORD, "[\""CONFIG_ID_NAZIV"\"]");
-char* register_rest_function(const char *URL, char *body_string)
+void register_rest_function(char* odgovor, const char *URL, int broj)
 {
     esp_http_client_config_t config_post = {
         .url = URL,
@@ -72,7 +74,10 @@ char* register_rest_function(const char *URL, char *body_string)
         
     esp_http_client_handle_t client = esp_http_client_init(&config_post);
 
-    char  *post_data = body_string;
+    char  *post_data[20];
+
+
+    sprintf(post_data,"%d", broj);
     
     esp_http_client_set_post_field(client, post_data, strlen(post_data));
     //tu se puniju headeri
@@ -81,22 +86,28 @@ char* register_rest_function(const char *URL, char *body_string)
     //esp_http_client_set_header(client, "Cache-Control", "no-cache");
     esp_err_t err = esp_http_client_perform(client);
 
+    //odgovor = "AABBCC";
+
     if (err == ESP_OK) {
-        printf( "HTTP GET Status = %d, content_length = %"PRId64"\n",
+        printf("HTTP POST Status = %d, content_length = %"PRId64"\n",
                 esp_http_client_get_status_code(client),
                 esp_http_client_get_content_length(client));
+        sprintf(odgovor,"Status = %d",
+                esp_http_client_get_status_code(client));
+        
     } else {
-        printf("HTTP GET request failed: %s\n", esp_err_to_name(err));
+        printf("HTTP POST request failed: %s\n", esp_err_to_name(err));
+        sprintf(odgovor,"FAIL");
     }
 
     esp_http_client_cleanup(client);
-    return body_data;
+   // return status;
 }
 
 //primjer get funkcije
 //get_rest_function(CONFIG_DATA_URL"?res="CONFIG_ID_NAZIV"&maxPayloadsPerResource=1", "res="CONFIG_ID_NAZIV"&maxPayloadsPerResource=1", CONFIG_USER_NAME, CONFIG_USER_PASSWORD)
 
-char* get_rest_function(const char *URL, const char *QUERY)
+char* get_rest_function(char* odgovor,const char *URL, const char *QUERY)
 {
 
 
@@ -123,11 +134,15 @@ char* get_rest_function(const char *URL, const char *QUERY)
     
 
     if (err == ESP_OK) {
-        printf( "HTTP GET Status = %d, content_length = %"PRId64"\n",
+        printf("HTTP GET Status = %d, content_length = %"PRId64"\n",
                 esp_http_client_get_status_code(client),
                 esp_http_client_get_content_length(client));
+        sprintf(odgovor,"Status = %d",
+                esp_http_client_get_status_code(client));
+        
     } else {
         printf("HTTP GET request failed: %s\n", esp_err_to_name(err));
+        sprintf(odgovor,"FAIL");
     }
     esp_http_client_cleanup(client);
 
@@ -135,11 +150,6 @@ char* get_rest_function(const char *URL, const char *QUERY)
 
 }
 
-
-//#include "lv_menu.h"
-
-//#include "../../lv_examples.h"
-//#if LV_USE_MENU && LV_USE_MSGBOX && LV_BUILD_EXAMPLES
 
 static uint8_t button_counter = 0;
 static lv_obj_t * count_label;
@@ -207,13 +217,17 @@ static void post_event_handler(lv_event_t * e)
       LV_LOG_USER("Click Event");
     else if( code == LV_EVENT_LONG_PRESSED_REPEAT )
       LV_LOG_USER("Press and Hold Event");
-     register_rest_function(API_GET_URL,"000");
-    button_counter = 335;
+     char *odgovor[25];
+     register_rest_function(odgovor, API_POST_URL, button_counter);
+     printf("gecrk\n");
+    //  *odgovor = "ccc";
+     printf("%s\n",*odgovor);
     lv_label_set_text_fmt(count_label, "Count: %d", button_counter);
 
        // static const char * btns[] ={"Apply", "Close", ""};
-
-    mbox1 = lv_msgbox_create(lv_layer_top(), "Hello", "This is a message box with two buttons.", NULL, true);
+   // printf(odgovor);
+  // odgovor = "ccccc";
+    mbox1 = lv_msgbox_create(lv_layer_top(), "Poslano", odgovor, NULL, true);
     lv_obj_add_event_cb(mbox1, mevent_cb, LV_EVENT_VALUE_CHANGED, NULL);
     lv_obj_center(mbox1);
       lv_group_add_obj(g2,mbox1);

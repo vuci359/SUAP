@@ -46,7 +46,7 @@ public class  SuapApiController: ControllerBase
             _data.prosjek = (_data.prosjek+broj)/2;
             System.Console.WriteLine("Dobil sam: "+_data.prosjek);
 
-            return Ok();
+            return Ok(broj);
         }catch(Exception e){
             System.Console.WriteLine(e);
             
