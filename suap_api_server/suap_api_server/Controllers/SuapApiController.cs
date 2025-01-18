@@ -26,7 +26,7 @@ public class  SuapApiController: ControllerBase
     [SwaggerResponse(Status404NotFound)]
     public IActionResult GetData(){
         try{
-            System.Console.WriteLine("Dobil sam: "+_data.prosjek);
+            System.Console.WriteLine("Poslal sam: "+_data.prosjek);
             return Ok(_data);
         }catch(Exception e){
             Console.WriteLine(e.Message);

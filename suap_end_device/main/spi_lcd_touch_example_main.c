@@ -18,6 +18,8 @@
 #include "driver/gpio.h"
 #include "driver/spi_master.h"
 #include "esp_err.h"
+
+#define LOG_LOCAL_LEVEL ESP_LOG_VERBOSE
 #include "esp_log.h"
 #include "nvs_flash.h"
 #include "esp_netif.h"

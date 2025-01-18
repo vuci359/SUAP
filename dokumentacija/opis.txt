@@ -27,3 +27,8 @@ u lvgl dokumentaciji fali opis za taj dio -> treba kopati po forumima
 
 driver/pulse_cnt.h - driver za hardverski brojač impulsa za enkoder
 iot_button.h - esp-ov driver za gumb s automatskim prepoznavanjem različitih stanja
+
+backend napisan u C# uredno vraća podatke u dijelovima
+chunked http response data -> nema dokumentacije, treba njuškati po forumuma https://esp32.com/viewtopic.php?t=18930
+postoji komentar u promjerima
+umjesto provjere dali postoje chunkovi stavlje tru, moglo bi izazivati problem za dulje JSON stringove

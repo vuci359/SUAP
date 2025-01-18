@@ -26,6 +26,8 @@
         "esp_transport_ssl.h": "c",
         "string.h": "c",
         "esp_http_client.h": "c",
-        "stddef.h": "c"
+        "stddef.h": "c",
+        "esp_err.h": "c",
+        "freertos.h": "c"
     }
 }
