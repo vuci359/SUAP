@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.AspNetCore.Authorization;
 using Newtonsoft.Json;
 
-namespace suap_api_server.Models;
+namespace suap_api_server.Models.Data;
 public class RecentData{
 
     public RecentData(int a, int b, double c){
