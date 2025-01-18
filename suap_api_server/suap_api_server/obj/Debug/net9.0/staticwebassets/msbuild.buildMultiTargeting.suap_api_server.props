@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="../build/suap_api_server.props" />
+</Project>

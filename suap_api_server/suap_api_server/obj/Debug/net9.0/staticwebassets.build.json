@@ -1,0 +1,12 @@
+{
+  "Version": 1,
+  "Hash": "spY/r4CfgD/JP59f8PLencF8I0+zj+H2RTF0XdCJpnk=",
+  "Source": "suap_api_server",
+  "BasePath": "_content/suap_api_server",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": [],
+  "Endpoints": []
+}
