@@ -6,14 +6,27 @@ spi_lcd_touch - primjer koda na kojem se bazira programsko rješenje
 esp_lcd_ili9341 - driver za display
 
 ekran ST7789 radi s driverom za ili9341 -> ona ugrađen driver za ST7789
-početna točka prikaza ije (0,0) -> sklopovski pomaknuta na drugo mjesto
+početna točka prikaza nije (0,0) -> sklopovski pomaknuta na drugo mjesto
+                                -> dio piksela jednostvano ne postoji na supstratu
     pomak početne točke prikaza nije dokumentiran -> potrebno njuškati po programskom kodu drivera
-
+    postoji više verzija ekrana ST7789 različitih rezolucija
+    kod ažuriranja vidljivi ostavi slike koja je bila prikazana prije (loš ekran?, loš driver/ nepopuno prepisivanje piksela?, parazitski kapaciteti?)
+    LCD LED ekran
 
 spi_lcd_touch_example_main - programski kod za inicijalizaciju i pokretanje grafičkog sučelja
 lvgl_demo_ui - programski kod za grafičko sučelje
 
+kratko o ESP32
+    Espressif
+    Kina
+    jeftini
+    močni
+    šlampavo napravljeni
+    gutači struje
+    skupovi hardverski implementirane funkcionalnosti ovise o modelu i ciljanoj potrošnji energije
+
 STRAPPING pinovi - imaju problema sami sa sobom
+    statistički značajan dio UI pinova
 
 ESP32 has 6 strapping pins:
 • MTDI/GPIO12: internal pull-down
@@ -30,11 +43,45 @@ opis rada enkodera
 enkoder EC11 ima 2 dijela
     gumb: upravljenja isto kao i za obični gumb
     rotirajući generator impulsa s dva izlaza koji su pomaknuti za četvrtinu faze
-    oznake izlaza: A i B
+oznake izlaza: A i B
     pri okretanju u smjeru kazaljke na satu izlaz A se zove još i CLK, a izlaz B DT(data). Pri obrnutom bmjeru okretanja i njihove su uloge zamijenjene
         - potrebno je podesiti brojač impulsa za obje mogućnosti
 
-LVGL zahtjeva instanciranje drivera pa instanciranje uređaja
+opis PCNT
+    broji (rastuće ili padajuče bridove) ili razine signala
+    nekoliko višekanalnih brojača
+    tipične primjene:
+        određivanje frekvencije signala brojenjem impulsa u vremenskom intervalu
+        dekodiranje kvadratnih signala u brzinu i smjer -> rad s enkoderima
+    kritične točke -> generiranje događaja
+        -> npr svakih X impulsa
+        -> callback funkcije za obradu događaja
+    moguće kompenzirati gubitke zbog preljeva -> za primjenu enkoera u sklopu ovog projekta nije kritično uhvatiti sve pomake enkodera
+    sigurnost izvođenja
+        neke ugrađene funkcije se mogu garantirano previlno izvesti u kontekstu različitih dretvi
+            pcnt_new_unit()
+            pcnt_new_channel()
+        u prekidnim potprogramima se smiju izvoditi
+            pcnt_unit_start()
+            pcnt_unit_stop()
+            pcnt_unit_clear_count()
+            pcnt_unit_get_count()
+        funkcije koje kao prvi argument primaju pcnt_unit_handle_t i pcnt_channel_handle_t
+            ne smatraju se sigurnima za istovremeno izvođeje u kontekstu više dretvi
+            izbjegavati korištenje u zadacima
+
+LVGL zahtijeva instanciranje drivera pa instanciranje uređaja
+    popularna grafička biblioteka napisana u C-u
+    obično se koristi za mikrokontrolera
+    zahtjeva pisanje relativno velike količine programskog koda za složeniju funkcionalnost
+    napradne funkcije slabo dokumentirane
+    definirani mnogi grafički elementi koje je potrebno samo podesiti i grupirati
+    podržani različiti načini odabira elemenata
+    funkcionalnost povezena s elementima se poziva korištenjem callback funkcija
+    koristi ugrađane strukture podataka za opis komunikacije sa spojenim uređajima
+    proziva ulazne uređaje
+
+
 lvgl_indev_drv_t nije driver, nego je struktura podataka koja pamti podatke o vrsti ulaznog uređaja i referencu na funkciju koja iz drivera uzima podatke
 koristi se standardni ESP-ov driver za enkoder koji koristi PCNT hardverski brojač impulsa iz kojega izvlači broj impulsa za meni.
 u lvgl dokumentaciji fali opis za taj dio -> treba kopati po forumima
@@ -46,9 +93,9 @@ kao primjer informacijske komunikacije s poslužiteljem šalje se trenutni broja
 na sličan način je, zamjenom podataka koji se šalju, moguće stvoriti i upravljačke porukes
 
 driver/pulse_cnt.h - driver za hardverski brojač impulsa za enkoder
-iot_button.h - esp-ov driver za gumb s automatskim prepoznavanjem različitih stanja
-
+iot_button.h - esp-ov driver za gumb s automatskim prepoznavanjem različitih stanjaeclipse
 za rad s enkoderom se koriste dva drivera: driver za prepoznavanje rotacijskih impulsa i driver za ugrađeni gumb.
+Driveri su podešeni za rad u istoj inicijalizacijskoj funkciji unutar glavnog programa
 
 backend napisan u C# uredno vraća podatke u dijelovima (fragmentirano)
     rješavanje fragmentacije na backendu nije poželjno -> mikrokontroler se mora moći spojiti na različite poslužitelje s različitim postavkama fragmentacije
@@ -59,4 +106,54 @@ postoji više verzija primjera HTTP handlera, nisu sve jednako sposobne. Najslo�
 
 kad se umjesto provjere je li paket fragmentiran stavi true, onda proradi, a kad se uvjet izbriše onda ne (pregažene istoimene varijable?)
 
+OPIS FUNKCIONALNOSTI UREĐAJA
 
+    dijelovi sustava
+        krajnji uređaji tipa suap_end_device
+        poslužitelji s REST APIjem različitih vrsta
+        teoratski je moguće u sustavu imati više poslužitelja i više krajnjih čvorova
+        registracija se za trenutnu implementaciju obavlja ručno
+            krajnji čvor zna adresu poslužitelja
+            poslužitelj za trenutno implementiranu funkcionalnost ne treba znati adresu čvora
+
+    korisni podaci
+        uređaj prema poslužitelju
+            brojač pritisaka na gum s lijevim enkoderom
+        poslužitelj prema uređaju
+            agregirani podaci
+                brojač pristiglih poruka
+                zadnja poznata vrijednost brojača pritisaka koja je poslana na poslužitelj
+                prsječna vrijednost brojača pritisaka (uračunata i početna 0, greška se smanjuje s vremenom)
+
+    suap_end_device
+        u trenutnoj immplementaciji šalje zahtjeve prema REST API poslužitelju
+            POST
+                šalje se trenutni brojač i ispisuje poruka sa statusom
+            GET
+                dohvaćaju se agragirani podaci
+
+
+    suap_api_server
+        u trenutnoj implementaciji podržava
+            primanje unaprijed definiranih podataka s krajnjeg uređaja u njihovo agregatiranje
+            slanje agregatiranih podataka na krajnji uređaj na zahtjev
+        REST API
+        .net framework
+        programski jezik C#
+        ne koristi sloj za perzistenciju podataka
+        podaci se agregatiraju u statičkom objektu
+            mogući problemi zbog višedretvenosti
+            prioritet je stavljena na komunikaciju, a ne na točnu i sigurnu obradu podataka
+        .net stvara prosece po potrebi pa je bez sloja prezistencije potrebno spremati podatke u statičkom kontekstu
+            dovoljno dobro za trenutni stupanj razvoja
+
+    ograničenja
+        krajnji čvor i poslužitelj implementiraju minimalnu funkcionalnost za demonstraciju ideje
+        krajnji čvor nije lako konfigurabilan
+        poslužitelj ne koristi sloj prezistencije
+        nema automatske registracije poslužitelja i krajnjih čvorova
+            potreban jedan stalno aktivan poslužitelj koji vodi brigu o registriranim uređajimas
+        nije podržano pobuđivanje krajnjeg čvora preko poslužitelja
+            moguće rješiti korištenjem dretve koja se periodički poziva ili stavljanjem dodatnog REST API poslužitelja na krajnji čvor
+        krajnji čvor koristi programski kod koji je zahtjevan za izvođenje
+        ESP32 ne voli fragmentirane pakete
