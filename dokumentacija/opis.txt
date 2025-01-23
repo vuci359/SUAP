@@ -22,19 +22,37 @@ kratko o ESP32
     jeftini
     močni
     šlampavo napravljeni
+    popularni
     gutači struje
     skupovi hardverski implementirane funkcionalnosti ovise o modelu i ciljanoj potrošnji energije
+    neki stariji ESP modeli se više ne proizvode
+        esp8266
+        npr. atmega325 se proizvodi veš preko 20 godina, treba referenca
+        https://spectrum.ieee.org/chip-hall-of-fame-atmel-atmega8
+        1990-e?
 
 STRAPPING pinovi - imaju problema sami sa sobom
     statistički značajan dio UI pinova
+    služe za podešavnje parametara za pokretanje
+    čita ih bootloader
+    moguće korištenje za debugiranje kod pokretanja
+    potrebno je pažljivo spajati pariferije (poštivanje ograničenja)
+    kao posljedica nepravinog korištenja onemogućavaje ure neke fukcije uređaja
+        boot
+        spajanje na uart
+        flash
+        korištenje ugrađene vanjske SPI memorije
 
 ESP32 has 6 strapping pins:
-• MTDI/GPIO12: internal pull-down
-• GPIO0: internal pull-up
-• GPIO2: internal pull-down
-• GPIO4: internal pull-down
-• MTDO/GPIO15: internal pull-up
-• GPIO5: internal pull-up
+
+    GPIO 0 – pulled up – used to set flash or download boot.
+    GPIO 2 – pulled down – used with GPIO 0 to select download boot.
+    GPIO 4 – pulled down – but doesn’t seem to be used.
+    GPIO 5 – pulled up – related to SDIO modes.
+    GPIO 12 (MTDI) – pulled down – SDIO voltage level.
+    GPIO 15 (MTDO) – pulled up – SDIO mode and diagnostic printing on boot.
+ detaljije u datasheetu
+ interni pullUP/DOWN se ne poništava ako nije drugačije podešeno u programu
 
 enkoderi koriste brojač impulsa, kratica PCNT
 neke verzije ESP32 nemaju hardverski PCNT, npr. ESP32-C linija, impulse je potrebno obraditi sklopovski
@@ -90,7 +108,7 @@ lijevi enkoder je povezan s funkcijama za kontrolu krajnjeg uređaja, a desni s 
 kao primer funkcija za rad s uređajima koristi se brojač pritisaka na gumbe
 
 kao primjer informacijske komunikacije s poslužiteljem šalje se trenutni brojač, a kao odgovor na zahtjev u poruci se ispisuje statistika s poslužiteljima
-na sličan način je, zamjenom podataka koji se šalju, moguće stvoriti i upravljačke porukes
+na sličan način je, zamjenom podataka koji se šalju, moguće stvoriti i upravljačke poruke
 
 driver/pulse_cnt.h - driver za hardverski brojač impulsa za enkoder
 iot_button.h - esp-ov driver za gumb s automatskim prepoznavanjem različitih stanjaeclipse
@@ -126,11 +144,12 @@ OPIS FUNKCIONALNOSTI UREĐAJA
                 prsječna vrijednost brojača pritisaka (uračunata i početna 0, greška se smanjuje s vremenom)
 
     suap_end_device
+        na ekranu prikazuje minimalno korisničko sučelje
         u trenutnoj immplementaciji šalje zahtjeve prema REST API poslužitelju
             POST
                 šalje se trenutni brojač i ispisuje poruka sa statusom
             GET
-                dohvaćaju se agragirani podaci
+                dohvaćaju se agregirani podaci
 
 
     suap_api_server
@@ -157,3 +176,11 @@ OPIS FUNKCIONALNOSTI UREĐAJA
             moguće rješiti korištenjem dretve koja se periodički poziva ili stavljanjem dodatnog REST API poslužitelja na krajnji čvor
         krajnji čvor koristi programski kod koji je zahtjevan za izvođenje
         ESP32 ne voli fragmentirane pakete
+
+    prednosti
+        lako proširiva funkcionalnost
+        korištenje standardnih komponenti
+        pristupačni uređaji
+            staro rečunalo s instaliranom distribucijom Linuxa
+            jeftini mikrokontroleri
+        moguće je preraditi krajnji čvor za rad s različitim mikrokontrolerima
