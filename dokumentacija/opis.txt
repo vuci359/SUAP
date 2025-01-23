@@ -1,8 +1,14 @@
 LVGL - library za grafičko sučelje
 
 spi_lcd_touch - primjer koda na kojem se bazira programsko rješenje
+ podrška za touch panel se ne koristi jer ga ekran nema -> potrebna dodatna programsk podrška za rad s ulaznim uređajima
 
 esp_lcd_ili9341 - driver za display
+
+ekran ST7789 radi s driverom za ili9341 -> ona ugrađen driver za ST7789
+početna točka prikaza ije (0,0) -> sklopovski pomaknuta na drugo mjesto
+    pomak početne točke prikaza nije dokumentiran -> potrebno njuškati po programskom kodu drivera
+
 
 spi_lcd_touch_example_main - programski kod za inicijalizaciju i pokretanje grafičkog sučelja
 lvgl_demo_ui - programski kod za grafičko sučelje
@@ -18,17 +24,39 @@ ESP32 has 6 strapping pins:
 • GPIO5: internal pull-up
 
 enkoderi koriste brojač impulsa, kratica PCNT
-neke verzije ESP32 nemaju hardverski PCNT, npr. c linija
+neke verzije ESP32 nemaju hardverski PCNT, npr. ESP32-C linija, impulse je potrebno obraditi sklopovski
+
+opis rada enkodera
+enkoder EC11 ima 2 dijela
+    gumb: upravljenja isto kao i za obični gumb
+    rotirajući generator impulsa s dva izlaza koji su pomaknuti za četvrtinu faze
+    oznake izlaza: A i B
+    pri okretanju u smjeru kazaljke na satu izlaz A se zove još i CLK, a izlaz B DT(data). Pri obrnutom bmjeru okretanja i njihove su uloge zamijenjene
+        - potrebno je podesiti brojač impulsa za obje mogućnosti
 
 LVGL zahtjeva instanciranje drivera pa instanciranje uređaja
 lvgl_indev_drv_t nije driver, nego je struktura podataka koja pamti podatke o vrsti ulaznog uređaja i referencu na funkciju koja iz drivera uzima podatke
 koristi se standardni ESP-ov driver za enkoder koji koristi PCNT hardverski brojač impulsa iz kojega izvlači broj impulsa za meni.
 u lvgl dokumentaciji fali opis za taj dio -> treba kopati po forumima
 
+lijevi enkoder je povezan s funkcijama za kontrolu krajnjeg uređaja, a desni s funkcijama za komunikaciju s poslužiteljima
+kao primer funkcija za rad s uređajima koristi se brojač pritisaka na gumbe
+
+kao primjer informacijske komunikacije s poslužiteljem šalje se trenutni brojač, a kao odgovor na zahtjev u poruci se ispisuje statistika s poslužiteljima
+na sličan način je, zamjenom podataka koji se šalju, moguće stvoriti i upravljačke porukes
+
 driver/pulse_cnt.h - driver za hardverski brojač impulsa za enkoder
 iot_button.h - esp-ov driver za gumb s automatskim prepoznavanjem različitih stanja
 
-backend napisan u C# uredno vraća podatke u dijelovima
+za rad s enkoderom se koriste dva drivera: driver za prepoznavanje rotacijskih impulsa i driver za ugrađeni gumb.
+
+backend napisan u C# uredno vraća podatke u dijelovima (fragmentirano)
+    rješavanje fragmentacije na backendu nije poželjno -> mikrokontroler se mora moći spojiti na različite poslužitelje s različitim postavkama fragmentacije
 chunked http response data -> nema dokumentacije, treba njuškati po forumuma https://esp32.com/viewtopic.php?t=18930
 postoji komentar u promjerima
-umjesto provjere dali postoje chunkovi stavlje tru, moglo bi izazivati problem za dulje JSON stringove
+umjesto provjere dali postoje chunkovi stavljeno true, moglo bi izazivati problem za dulje JSON stringove
+postoji više verzija primjera HTTP handlera, nisu sve jednako sposobne. Najsloženija rješava problem uz modifikaciju (if(true))
+
+kad se umjesto provjere je li paket fragmentiran stavi true, onda proradi, a kad se uvjet izbriše onda ne (pregažene istoimene varijable?)
+
+
