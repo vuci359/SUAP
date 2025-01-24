@@ -1,5 +1,7 @@
 # Prerequisites
 *.d
+#libreoffice cache
+*.odts
 
 # Compiled Object files
 *.slo
