@@ -1,8 +1,0 @@
-@startuml
-class RecentData {
-    + RecentData(a:int, b:int, c:double)
-    + zadnja_vrijednost : int <<get>> <<set>>
-    + brojac : int <<get>> <<set>>
-    + prosjek : double <<get>> <<set>>
-}
-@enduml

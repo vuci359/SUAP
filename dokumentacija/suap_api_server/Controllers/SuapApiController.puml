@@ -1,9 +1,0 @@
-@startuml
-class SuapApiController {
-    - {static} _data : RecentData
-    + SuapApiController()
-    + GetData() : IActionResult
-    + PostData(broj:int) : IActionResult
-}
-ControllerBase <|-- SuapApiController
-@enduml
