@@ -1,0 +1,6 @@
+@startuml
+!include ./suap_api_server/Program.puml
+!include ./suap_api_server/Controllers/SuapApiController.puml
+!include ./suap_api_server/Models/ErrorViewModel.puml
+!include ./suap_api_server/Models/Data/RecentData.puml
+@enduml
