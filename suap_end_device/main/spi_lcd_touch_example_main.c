@@ -29,6 +29,7 @@
 
 #include "lvgl.h"
 #include "stdbool.h"
+#include "drivers/encoder.h"
 
 #if CONFIG_EXAMPLE_LCD_CONTROLLER_ILI9341
 #include "esp_lcd_ili9341.h"
@@ -243,34 +244,6 @@ static void example_lvgl_port_task(void *arg)
     }
 }
 
-//zadatak za citanje enkodera
-void encoder_handler_task(void *arg){
-    ESP_LOGI(encoder, "ulaz_u_task");
-
-    int index = *(int*)arg;
-
-    ESP_LOGI(encoder, "index: %d", index);
-
-	// Report counter value
-    int pulse_count = 0;
-    int previous_pulse_count = pulse_count;
-    int event_count = 0;
-    while (1) {
-        if (xQueueReceive(queues[index], &event_count, pdMS_TO_TICKS(1000))) {
-            ESP_LOGI(TAG, "Watch point event, count: %d", event_count);
-        } else {
-            ESP_ERROR_CHECK(pcnt_unit_get_count(encoders[index], &pulse_count));
-            ESP_LOGI(TAG, "Pulse count: %d", pulse_count);
-        }
-        if(pulse_count > previous_pulse_count){
-
-        }else if(pulse_count > previous_pulse_count){
-
-        }
-        previous_pulse_count = pulse_count;
-        vTaskDelay(50/portTICK_PERIOD_MS);
-    }
-}
 
 void app_main(void)
 {
@@ -410,12 +383,10 @@ void app_main(void)
     ESP_LOGI(TAG, "Init ENCODER%d", index0);
     encoder_init(main_encoder_cb, index0, EXAMPLE_ENCODER1_CLK, EXAMPLE_ENCODER1_DT, EXAMPLE_ENCODER1_BTN);
     ESP_LOGI(TAG, "Create ENCODER%d task", index0);
-  //  xTaskCreate(encoder_handler_task, "ENCODER1", 2*1024, &index0 /*index od encodera*/, 1, NULL);
     int index1 = 1;
     ESP_LOGI(TAG, "Init ENCODER%d", index1);
     encoder_init(main_encoder_cb, index1, EXAMPLE_ENCODER2_CLK, EXAMPLE_ENCODER2_DT, EXAMPLE_ENCODER2_BTN);
     ESP_LOGI(TAG, "Create ENCODER%d task", index1);
-  //  xTaskCreate(encoder_handler_task, "ENCODER2", 2*1024, &index1 /*index od encodera*/, 1, NULL);
 
     //stavljaje menija u grupu
     static lv_indev_drv_t encoder1d; //driver mora biti static

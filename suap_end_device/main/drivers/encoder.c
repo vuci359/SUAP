@@ -1,5 +1,10 @@
-#include "./encoder.h"
+#include "encoder.h"
 
+pcnt_unit_handle_t encoders[2] = {NULL, NULL};
+QueueHandle_t queues[2] = {NULL, NULL};
+int enc_pulse_old[2] = {0, 0};
+int enc_pulse_count[2] = {0, 0};
+button_handle_t gpio_btn[2] = {NULL, NULL};
 
 void encoder1_read(lv_indev_drv_t * drv, lv_indev_data_t*data){
     pcnt_unit_get_count(encoders[0], &enc_pulse_count[0]);
@@ -19,30 +24,21 @@ void encoder2_read(lv_indev_drv_t * drv, lv_indev_data_t*data){
 
 }
 
-static bool example_pcnt_on_reach(pcnt_unit_handle_t unit, const pcnt_watch_event_data_t *edata, void *user_ctx)
-{
-    BaseType_t high_task_wakeup;
-    QueueHandle_t queue = (QueueHandle_t)user_ctx;
-    // send event data to queue, from this interrupt callback
-    xQueueSendFromISR(queue, &(edata->watch_point_value), &high_task_wakeup);
-    return (high_task_wakeup == pdTRUE);
-}
-
 void encoder_init(void* callback, int index, int gpio_CLK, int gpio_DT, int gpio_BTN){
-    ESP_LOGI(TAG, "install pcnt unit");
+    ESP_LOGI(enc, "install pcnt unit");
     pcnt_unit_config_t unit_config = {
         .high_limit = EXAMPLE_PCNT_HIGH_LIMIT,
         .low_limit = EXAMPLE_PCNT_LOW_LIMIT,
     };
     ESP_ERROR_CHECK(pcnt_new_unit(&unit_config, &encoders[index]));
 
-    ESP_LOGI(TAG, "set glitch filter");
+    ESP_LOGI(enc, "set glitch filter");
     pcnt_glitch_filter_config_t filter_config = {
         .max_glitch_ns = 1000,
     };
     ESP_ERROR_CHECK(pcnt_unit_set_glitch_filter(encoders[index], &filter_config));
 
-    ESP_LOGI(TAG, "install pcnt channels");
+    ESP_LOGI(enc, "install pcnt channels");
     pcnt_chan_config_t chan_a_config = {
         .edge_gpio_num = gpio_CLK,
         .level_gpio_num = gpio_DT,
@@ -56,13 +52,13 @@ void encoder_init(void* callback, int index, int gpio_CLK, int gpio_DT, int gpio
     pcnt_channel_handle_t pcnt_chan_b = NULL;
     ESP_ERROR_CHECK(pcnt_new_channel(encoders[index], &chan_b_config, &pcnt_chan_b));
 
-    ESP_LOGI(TAG, "set edge and level actions for pcnt channels");
+    ESP_LOGI(enc, "set edge and level actions for pcnt channels");
     ESP_ERROR_CHECK(pcnt_channel_set_edge_action(pcnt_chan_a, PCNT_CHANNEL_EDGE_ACTION_DECREASE, PCNT_CHANNEL_EDGE_ACTION_INCREASE));
     ESP_ERROR_CHECK(pcnt_channel_set_level_action(pcnt_chan_a, PCNT_CHANNEL_LEVEL_ACTION_KEEP, PCNT_CHANNEL_LEVEL_ACTION_INVERSE));
     ESP_ERROR_CHECK(pcnt_channel_set_edge_action(pcnt_chan_b, PCNT_CHANNEL_EDGE_ACTION_INCREASE, PCNT_CHANNEL_EDGE_ACTION_DECREASE));
     ESP_ERROR_CHECK(pcnt_channel_set_level_action(pcnt_chan_b, PCNT_CHANNEL_LEVEL_ACTION_KEEP, PCNT_CHANNEL_LEVEL_ACTION_INVERSE));
 
-    ESP_LOGI(TAG, "add watch points and register callbacks");
+    ESP_LOGI(enc, "add watch points and register callbacks");
     int watch_points[] = {EXAMPLE_PCNT_LOW_LIMIT, -50, 0, 50, EXAMPLE_PCNT_HIGH_LIMIT};
     for (size_t i = 0; i < sizeof(watch_points) / sizeof(watch_points[0]); i++) {
         ESP_ERROR_CHECK(pcnt_unit_add_watch_point(encoders[index], watch_points[i]));
@@ -73,11 +69,11 @@ void encoder_init(void* callback, int index, int gpio_CLK, int gpio_DT, int gpio
     queues[index] = xQueueCreate(10, sizeof(int));
     ESP_ERROR_CHECK(pcnt_unit_register_event_callbacks(encoders[index], &cbs, queues[index]));
 
-    ESP_LOGI(TAG, "enable pcnt unit");
+    ESP_LOGI(enc, "enable pcnt unit");
     ESP_ERROR_CHECK(pcnt_unit_enable(encoders[index]));
-    ESP_LOGI(TAG, "clear pcnt unit");
+    ESP_LOGI(enc, "clear pcnt unit");
     ESP_ERROR_CHECK(pcnt_unit_clear_count(encoders[index]));
-    ESP_LOGI(TAG, "start pcnt unit");
+    ESP_LOGI(enc, "start pcnt unit");
     ESP_ERROR_CHECK(pcnt_unit_start(encoders[index]));
 
 #if CONFIG_EXAMPLE_WAKE_UP_LIGHT_SLEEP
