@@ -4,11 +4,11 @@
     sastanak
     predaja plana rada
     početak refaktoriranja početnog progranskog koda
-    detaljna skica podataka za razmjenu    GOTOVO
-    detaljna skica parsera za interpretaciju zahtjeva zadanih u JSON formatu  GOTOVO
+    detaljna skica podataka za razmjenu
+    detaljna skica parsera za interpretaciju zahtjeva zadanih u JSON formatu
 17.3.2025. - 23.3.2025.
     završavanje refaktoriranja programskog koda krajnjeg čvora
-    prilagodba grafičkog sučelja za automatsko stvaranje gumba    ODGOĐENO
+    prilagodba grafičkog sučelja za automatsko stvaranje gumba
 24.3.2025. - 30.3.2025.
     stvaranje podrške za rad s vanjskom memorijom
     stvaranje parsera za obradu unaprijed spremljenih zahtjeva ->potprogrami
