@@ -16,6 +16,7 @@
     "idf.toolsPath": "/home/majmun/.espressif",
     "idf.flashType": "UART",
     "files.associations": {
+        ".fantomasignore": "ignore",
         "esp_lcd_touch_stmpe610.h": "c",
         "esp_lcd_ili9341.h": "c",
         "esp_lcd_gc9a01.h": "c",
@@ -28,6 +29,9 @@
         "esp_http_client.h": "c",
         "stddef.h": "c",
         "esp_err.h": "c",
-        "freertos.h": "c"
+        "freertos.h": "c",
+        "semphr.h": "c",
+        "protocol_examples_common.h": "c",
+        "esp_lcd_panel_ops.h": "c"
     }
 }
