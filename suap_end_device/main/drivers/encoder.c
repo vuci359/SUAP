@@ -93,4 +93,8 @@ button_config_t gpio_btn_cfg = {
         .active_level = 0,
     },
 };
+gpio_btn[index] = iot_button_create(&gpio_btn_cfg);
+if(NULL == gpio_btn[index]) {
+    ESP_LOGE(enc, "Button create failed");
+}
 }
