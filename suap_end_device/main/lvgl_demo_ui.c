@@ -18,13 +18,14 @@
 #include <stddef.h>
 #include <string.h>
 #include <cJSON.h>
+#include "networking/http_handling.h"
 
 #define MIN(a,b) (((a)<(b))?(a):(b))
 #define MAX(a,b) (((a)>(b))?(a):(b))
 
 #define MAX_HTTP_RECV_BUFFER 512
 
-#define SERVER_IP "192.168.88.252:5023"
+#define SERVER_IP "10.200.2.194:5023"
 
 #define API_GET_URL "http://"SERVER_IP"/api/SuapApi"
 
@@ -36,7 +37,6 @@
 
 char *TAG = "SUAP";
 
-char responseBuffer[MAX_HTTP_RECV_BUFFER];
 
 char *body_data = {"*"};
 static int zadnja_vrijednost = 0;
@@ -79,212 +79,6 @@ static int extract_relevant_data(char *json){
 
     cJSON_Delete(json_data);
     return 0;
-}
-
-esp_err_t client_event_http_handler(esp_http_client_event_handle_t evt)
-{
-    static char *output_buffer;  // Buffer to store response of http request from event handler
-    static int output_len;       // Stores number of bytes read
-    switch(evt->event_id) {
-        case HTTP_EVENT_ERROR:
-            ESP_LOGD(TAG, "HTTP_EVENT_ERROR");
-            break;
-        case HTTP_EVENT_ON_CONNECTED:
-            ESP_LOGD(TAG, "HTTP_EVENT_ON_CONNECTED");
-            break;
-        case HTTP_EVENT_HEADER_SENT:
-            ESP_LOGD(TAG, "HTTP_EVENT_HEADER_SENT");
-            break;
-        case HTTP_EVENT_ON_HEADER:
-            ESP_LOGD(TAG, "HTTP_EVENT_ON_HEADER, key=%s, value=%s", evt->header_key, evt->header_value);
-            break;
-        case HTTP_EVENT_ON_DATA:
-            ESP_LOGD(TAG, "HTTP_EVENT_ON_DATA, len=%d", evt->data_len);
-            // Clean the buffer in case of a new request
-            if (output_len == 0 && evt->user_data) {
-                // we are just starting to copy the output data into the use
-                memset(evt->user_data, 0, MAX_HTTP_RECV_BUFFER);
-            }
-            /*
-             *  Check for chunked encoding is added as the URL for chunked encoding used in this example returns binary data.
-             *  However, event handler can also be used in case chunked encoding is used.
-             */
-            if (true/*!esp_http_client_is_chunked_response(evt->client)*/) {
-                // If user_data buffer is configured, copy the response into the buffer
-                int copy_len = 0;
-                if (evt->user_data) {
-                    // The last byte in evt->user_data is kept for the NULL character in case of out-of-bound access.
-                    copy_len = MIN(evt->data_len, (MAX_HTTP_RECV_BUFFER - output_len));
-                    if (copy_len) {
-                        memcpy(evt->user_data + output_len, evt->data, copy_len);
-                    }
-                } else {
-                    int content_len = esp_http_client_get_content_length(evt->client);
-                    if (output_buffer == NULL) {
-                        // We initialize output_buffer with 0 because it is used by strlen() and similar functions therefore should be null terminated.
-                        output_buffer = (char *) calloc(content_len + 1, sizeof(char));
-                        output_len = 0;
-                        if (output_buffer == NULL) {
-                            ESP_LOGE(TAG, "Failed to allocate memory for output buffer");
-                            return ESP_FAIL;
-                        }
-                    }
-                    copy_len = MIN(evt->data_len, (content_len - output_len));
-                    if (copy_len) {
-                        memcpy(output_buffer + output_len, evt->data, copy_len);
-                    }
-                }
-                output_len += copy_len;
-            }else
-            {
-                ESP_LOGI(TAG, "Data chunk: %s; len = %d", (char *) evt->data, evt->data_len);   // HERE!
-            }
-
-            break;
-        case HTTP_EVENT_ON_FINISH:
-            ESP_LOGD(TAG, "HTTP_EVENT_ON_FINISH");
-            if (output_buffer != NULL) {
-                // Response is accumulated in output_buffer. Uncomment the below line to print the accumulated response
-                ESP_LOG_BUFFER_HEX(TAG, output_buffer, output_len);
-                free(output_buffer);
-                output_buffer = NULL;
-            }
-            output_len = 0;
-            break;
-        case HTTP_EVENT_DISCONNECTED:
-            ESP_LOGI(TAG, "HTTP_EVENT_DISCONNECTED");
-            int mbedtls_err = 0;
-            esp_err_t err = esp_tls_get_and_clear_last_error((esp_tls_error_handle_t)evt->data, &mbedtls_err, NULL);
-            if (err != 0) {
-                ESP_LOGI(TAG, "Last esp error code: 0x%x", err);
-                ESP_LOGI(TAG, "Last mbedtls failure: 0x%x", mbedtls_err);
-            }
-            if (output_buffer != NULL) {
-                free(output_buffer);
-                output_buffer = NULL;
-            }
-            output_len = 0;
-            break;
-        case HTTP_EVENT_REDIRECT:
-            ESP_LOGD(TAG, "HTTP_EVENT_REDIRECT");
-            esp_http_client_set_header(evt->client, "From", "user@example.com");
-            esp_http_client_set_header(evt->client, "Accept", "text/html");
-            esp_http_client_set_redirection(evt->client);
-            break;
-    }
-    return ESP_OK;
-}
-
-static void http_download_chunk(void)
-{
-    esp_http_client_config_t config = {
-        .url = API_GET_URL,
-        .event_handler = client_event_http_handler,
-    };
-    esp_http_client_handle_t client = esp_http_client_init(&config);
-    esp_err_t err = esp_http_client_perform(client);
-
-    if (err == ESP_OK) {
-        ESP_LOGI(TAG, "HTTP chunk encoding Status = %d, content_length = %"PRId64,
-                esp_http_client_get_status_code(client),
-                esp_http_client_get_content_length(client));
-    } else {
-        ESP_LOGE(TAG, "Error perform http request %s", esp_err_to_name(err));
-    }
-    esp_http_client_cleanup(client);
-}
-//primjer post funkcije
-//register_rest_function(CONFIG_REGISTRATION_URL_2, CONFIG_USER_NAME, CONFIG_USER_PASSWORD, "[\""CONFIG_ID_NAZIV"\"]");
-static void register_rest_function(char* odgovor, const char *URL, int broj)
-{
-    esp_http_client_config_t config_post = {
-        .url = URL,
-        .method = HTTP_METHOD_POST,
-        .cert_pem = NULL,
-        //.user_data = body_data,
-        .event_handler = client_event_http_handler,
-        .buffer_size = MAX_HTTP_RECV_BUFFER
-        };
-        
-    esp_http_client_handle_t client = esp_http_client_init(&config_post);
-
-    char  *post_data[20];
-
-
-    sprintf(post_data,"%d", broj);
-    
-    esp_http_client_set_post_field(client, post_data, strlen(post_data));
-    //tu se puniju headeri
-    //esp_http_client_set_header(client, "Authorisation", "Basic aW50c3R2X3NtYXJ0cGFya2luZzpmZlozUElnM2tqc3JoVU1S");
-    esp_http_client_set_header(client, "Content-Type", "application/json; charset=utf-8");
-    //esp_http_client_set_header(client, "Cache-Control", "no-cache");
-    esp_err_t err = esp_http_client_perform(client);
-
-    //odgovor = "AABBCC";
-
-    if (err == ESP_OK) {
-        printf("HTTP POST Status = %d, content_length = %"PRId64"\n",
-                esp_http_client_get_status_code(client),
-                esp_http_client_get_content_length(client));
-        sprintf(odgovor,"Status = %d",
-                esp_http_client_get_status_code(client));
-        
-    } else {
-        printf("HTTP POST request failed: %s\n", esp_err_to_name(err));
-        sprintf(odgovor,"FAIL");
-    }
-
-    esp_http_client_cleanup(client);
-   // return status;
-}
-
-//primjer get funkcije
-//get_rest_function(CONFIG_DATA_URL"?res="CONFIG_ID_NAZIV"&maxPayloadsPerResource=1", "res="CONFIG_ID_NAZIV"&maxPayloadsPerResource=1", CONFIG_USER_NAME, CONFIG_USER_PASSWORD)
-
-static void get_rest_function(char * return_data, char* odgovor, const char *URL, const char *QUERY)
-{
-  esp_http_client_config_t config_get = {
-        .url = URL,
-        .method = HTTP_METHOD_GET,
-        .cert_pem = NULL,
-        .event_handler = client_event_http_handler,
-        .transport_type = HTTP_TRANSPORT_OVER_TCP,
-        .user_data = responseBuffer,
-        //.disable_auto_redirect = true,
-        .buffer_size = MAX_HTTP_RECV_BUFFER
-
-      //  .buffer_size = 2048,
-       // .query = QUERY
-    };
-
-   // printf("%s\n", config_get.query);
-        
-    esp_http_client_handle_t client = esp_http_client_init(&config_get);
-
-    esp_http_client_set_header(client, "Accept", "application/json");
-
-// GET
-    esp_err_t err = esp_http_client_perform(client);
-   // esp_err_t err2 = esp_http_client_read(client, body_data, MAX_HTTP_RECV_BUFFER);
-
-
-    if (err == ESP_OK) {
-        printf("HTTP GET Status = %d, content_length = %"PRId64"\n",
-                esp_http_client_get_status_code(client),
-                esp_http_client_get_content_length(client));
-        sprintf(odgovor,"Status = %d",
-                esp_http_client_get_status_code(client));
-        
-    } else {
-        printf("HTTP GET request failed: %s\n", esp_err_to_name(err));
-        sprintf(odgovor,"FAIL");
-    }   // printf("%s\n", return_data);
-
-    esp_http_client_cleanup(client);
-        printf("%s\n", responseBuffer);
-    strcpy(return_data, responseBuffer); 
-   // return_data = body_data;
-   // printf("%s\n", return_data);
 }
 
 
@@ -371,7 +165,7 @@ static void post_event_handler(lv_event_t * e)
     else if( code == LV_EVENT_LONG_PRESSED_REPEAT )
       LV_LOG_USER("Press and Hold Event");
      char *odgovor[25];
-     register_rest_function(odgovor, API_POST_URL, button_counter);
+     post_rest_function(odgovor, API_POST_URL, button_counter);
 
     mbox1 = lv_msgbox_create(lv_layer_top(), "Poslano", odgovor, NULL, true);
     lv_obj_add_event_cb(mbox1, mevent_cb, LV_EVENT_VALUE_CHANGED, NULL);

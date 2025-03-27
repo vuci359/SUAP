@@ -37,6 +37,8 @@
         "iot_button.h": "c",
         "task.h": "c",
         "queue.h": "c",
-        "display.h": "c"
+        "display.h": "c",
+        "http_handling.h": "c",
+        "random": "c"
     }
 }
