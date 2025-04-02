@@ -39,6 +39,8 @@
         "queue.h": "c",
         "display.h": "c",
         "http_handling.h": "c",
-        "random": "c"
+        "random": "c",
+        "request_parser.h": "c",
+        "spi_master.h": "c"
     }
 }

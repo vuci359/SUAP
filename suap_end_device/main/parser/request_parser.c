@@ -1,35 +1,67 @@
-static int extract_relevant_data(char *json){
+#include "request_parser.h"
 
+static int extract_relevant_data(char *json, char *ID, char *network, int *network_type, char *interface, int *targetID, int *request_type, char *body){
     const cJSON *main_request = NULL;
-    const cJSON *request_body = NULL;
     const cJSON *pom = NULL;
 
-    cJSON *json_data = cJSON_Parse(json);
-    if(json_data == NULL){
-        printf("JSON data IS NULL\n");
+    main_request = cJSON_Parse(json);
+    if(main_request == NULL){
+        ESP_LOGE(pars, "JSON je NULL");
         return -1;
     }
     
-        zadnja = cJSON_GetObjectItemCaseSensitive(json_data, ZADNJA_VRIJEDONST);
-        if (!cJSON_IsNumber(zadnja)){
-            return -5;
+        pom = cJSON_GetObjectItemCaseSensitive(main_request, "ID");
+        if (!cJSON_IsString(pom)){
+           ESP_LOGE(pars, "ID nije string");
+           return -2;
         }
-        //provjera dali su poslani podaci za dobar uređaj
-        br = cJSON_GetObjectItemCaseSensitive(json_data, BROJAC);
-        if (!cJSON_IsNumber(br)){
-            return -5;
-        }
-        pr = cJSON_GetObjectItemCaseSensitive(json_data, PROSJEK);
-        if (!cJSON_IsNumber(pr)){
-            return -5;
-        }
+        *ID = pom->valuestring;
 
-        zadnja_vrijednost = zadnja->valueint;
-        brojac = br->valueint;
-        prosjek = pr->valuedouble;
-        printf("%d %d %f\n", zadnja_vrijednost, brojac, prosjek);
-    
+        pom = cJSON_GetObjectItemCaseSensitive(main_request, "network");
+        if (!cJSON_IsString(pom)){
+            ESP_LOGE(pars, "ID mreže nije string");
+            return -3;
+        }
+        *network = pom->valuestring;
 
-    cJSON_Delete(json_data);
+
+        pom = cJSON_GetObjectItemCaseSensitive(main_request, "network_type");
+        if (!cJSON_IsNumber(pom)){
+            ESP_LOGE(pars, "Tip mreže nije broj");
+            return -4;
+        }
+        *network_type = pom->valueint;
+
+
+        pom = cJSON_GetObjectItemCaseSensitive(main_request, "interface");
+        if (!cJSON_IsString(pom)){
+            ESP_LOGE(pars, "Mrežno sučelje nije string");
+            return -5;
+        }
+        *interface = pom->valuestring;
+
+        pom = cJSON_GetObjectItemCaseSensitive(main_request, "targetID");
+        if (!cJSON_IsNumber(pom)){
+            ESP_LOGE(pars, "Indentifikator odredišta nije broj");
+            return -6;
+        }
+        *targetID = pom->valueint;
+
+        pom = cJSON_GetObjectItemCaseSensitive(main_request, "request_type");
+        if (!cJSON_IsNumber(pom)){
+            ESP_LOGE(pars, "Indentifikator odredišta nije broj");
+            return -7;
+        }
+        *request_type = pom->valueint;
+
+        pom = cJSON_GetObjectItemCaseSensitive(main_request, "request_body");
+        if (!cJSON_IsString(pom)){
+            ESP_LOGE(pars, "Sadržaj zahtjeva nije string");
+            return -8;
+        }
+        *body = pom->valuestring;
+
+
+    cJSON_Delete(main_request);
     return 0;
 }
