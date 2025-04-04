@@ -41,6 +41,7 @@
         "http_handling.h": "c",
         "random": "c",
         "request_parser.h": "c",
-        "spi_master.h": "c"
+        "spi_master.h": "c",
+        "request_handling.h": "c"
     }
 }

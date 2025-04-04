@@ -1,6 +1,6 @@
-#include "request_parser.h"
+#include "communication_data_handling.h"
 
-static int parse_request(char *json, char *ID, char *network, int *network_type, char *interface, int *targetID, char *body){
+int parse_request(char *json, char *ID, char *network, int *network_type, char *interface, int *targetID, char *body){
     const cJSON *main_request = NULL;
     cJSON *pom = NULL;
 
@@ -62,7 +62,7 @@ static int parse_request(char *json, char *ID, char *network, int *network_type,
 }
 
 
-static int parse_request_body(char *json, int *request_type, int *device_type, int *logical_clock, int *device_id, char *data){
+int parse_request_body(char *json, int *request_type, int *device_type, int *logical_clock, int *device_id, char *data){
     const cJSON *main_request = NULL;
     cJSON *pom = NULL;
 
@@ -116,7 +116,7 @@ static int parse_request_body(char *json, int *request_type, int *device_type, i
     return 0;
 }
 
-static int parse_sensor_request(char *json){
+int parse_sensor_request(char *json){
     const cJSON *main_request = NULL;
 
     main_request = cJSON_Parse(json);
@@ -127,8 +127,7 @@ static int parse_sensor_request(char *json){
     cJSON_Delete(main_request);
     return -1;
 }
-
-static int parse_actuator_request(char *json, int *new_state){
+int parse_actuator_request(char *json, int *new_state){
     const cJSON *main_request = NULL;
     cJSON *pom = NULL;
 
@@ -150,7 +149,7 @@ static int parse_actuator_request(char *json, int *new_state){
     return 0;
 }
 
-static int parse_user_request(char *json, char *message, bool *input_required){
+int parse_user_request(char *json, char *message, bool *input_required){
     const cJSON *main_request = NULL;
     cJSON *pom = NULL;
 
@@ -179,6 +178,4 @@ static int parse_user_request(char *json, char *message, bool *input_required){
     cJSON_Delete(pom);
 
     return 0;
-
-
 }
