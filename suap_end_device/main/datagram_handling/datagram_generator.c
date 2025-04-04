@@ -1,13 +1,14 @@
 #include "datagram_handling.h"
 
 
-char* generate_datagram(char *ID, char *network, int *network_type, char *interface, int *targetID, char *body){
+char* generate_datagram(char *ID, char *network, int *network_type, char *interface, int *sourceID, int *targetID, char *body){
     char json[REQUEST_STRING_SIZE] = "";
     strcat(json, "{");
         strcat(json, "\"ID\":");strcat(json, ID);
         strcat(json, "\"network\":"); strcat(json, network);
         strcat(json, "\"network_type\":"); strcat(json, network_type);
         strcat(json, "\"interface\":"); strcat(json, interface);
+        strcat(json, "\"sourceID\":"); strcat(json, sourceID);
         strcat(json, "\"targetID\":"); strcat(json, targetID);
         strcat(json, "\"body\":"); strcat(json, body);
     strcat(json, "}");

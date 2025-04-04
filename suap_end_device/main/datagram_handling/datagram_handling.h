@@ -5,12 +5,15 @@
 #include <string.h>
 #include <cJSON.h>
 #include "esp_err.h"
+#include <math.h>
 
 #define LOG_LOCAL_LEVEL ESP_LOG_VERBOSE
 #include "esp_log.h"
 #include "nvs_flash.h"
 #include "esp_netif.h"
 #include "esp_event.h"
+
+int current_logical_clock;
 
 //string sizes
 #define REQUEST_STRING_SIZE 300
@@ -28,7 +31,8 @@
 #define MESSAGE 2
 
 //device type
-#define SENSOR 0
+#define SENSOR 0;
+
 #define ACTUATOR 1
 #define USER 2
 
@@ -37,17 +41,17 @@
 //target_id se vadi iz postgres baze na koordinatoru, a dobiva se nakon registracije
 //device_id je indentifikator periferije spojene na uređajs
 const char *pars = "main request parser";
-int parse_datagram(char *json, char *ID, char *network, int *network_type, char *interface, int *targetID, char *body);
+int parse_datagram(char *json, char *ID, char *network, int *network_type, char *interface, int *sourceID, int *targetID, char *body);
 int parse_datagram_body(char *json, int *request_type, int *device_type, int *logical_clock, int *device_id, char *data);
-int parse_sensor_datagram(char *json);
+int parse_sensor_datagram(char *json, int *measurement, char *unit);
 int parse_actuator_datagram(char *json, int *new_state);
 int parse_user_datagram(char *json, char *message, bool *input_required);
 
 
 //generator
-char* generate_datagram(char *ID, char *network, int *network_type, char *interface, int *targetID, char *body);
+char* generate_datagram(char *ID, char *network, int *network_type, char *interface, int *sourceD, int *targetID, char *body);
 char* generate_datagram_body(int *request_type, int *device_type, int *logical_clock, int *device_id, char *data);
-char* generate_sensor_datagram();
+char* generate_sensor_datagram(int *measurement, char* unit);
 char* generate_actuator_datagram(int *oldstate, int *new_state);
 char* generate_user_datagram(char *message, bool *input_required, int *userinput);
 
