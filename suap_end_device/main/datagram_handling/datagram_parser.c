@@ -1,4 +1,4 @@
-#include "communication_data_handling.h"
+#include "datagram_handling.h"
 
 int parse_request(char *json, char *ID, char *network, int *network_type, char *interface, int *targetID, char *body){
     const cJSON *main_request = NULL;
