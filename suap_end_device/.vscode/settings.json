@@ -44,6 +44,7 @@
         "spi_master.h": "c",
         "request_handling.h": "c",
         "datagram_handling.h": "c",
-        "limits": "c"
+        "limits": "c",
+        "esp_netif.h": "c"
     }
 }

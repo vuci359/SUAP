@@ -6,14 +6,17 @@
 #include <cJSON.h>
 #include "esp_err.h"
 #include <math.h>
+#include "esp_wifi.h"
+
 
 #define LOG_LOCAL_LEVEL ESP_LOG_VERBOSE
 #include "esp_log.h"
 #include "nvs_flash.h"
 #include "esp_netif.h"
 #include "esp_event.h"
+#include "networking/http_handling.h"
 
-int current_logical_clock;
+int current_logical_clock = 0;
 
 //string sizes
 #define REQUEST_STRING_SIZE 300
@@ -32,9 +35,15 @@ int current_logical_clock;
 
 //device type
 #define SENSOR 0;
-
 #define ACTUATOR 1
 #define USER 2
+
+
+//senzori
+#define WLAN0 0
+
+//aktuatori
+#define BACKLIGHT0 0
 
 //parser
 
@@ -45,8 +54,7 @@ int parse_datagram(char *json, char *ID, char *network, int *network_type, char 
 int parse_datagram_body(char *json, int *request_type, int *device_type, int *logical_clock, int *device_id, char *data);
 int parse_sensor_datagram(char *json, int *measurement, char *unit);
 int parse_actuator_datagram(char *json, int *new_state);
-int parse_user_datagram(char *json, char *message, bool *input_required);
-
+int parse_user_datagram(char *json, char *message, bool *input_required, int *user_input);
 
 //generator
 char* generate_datagram(char *ID, char *network, int *network_type, char *interface, int *sourceD, int *targetID, char *body);

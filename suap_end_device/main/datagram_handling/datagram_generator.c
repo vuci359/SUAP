@@ -70,10 +70,10 @@ char* generate_user_datagram(char *message, bool *input_required, int *user_inpu
             strcat(json, "\"input_required\":"); strcat(json, "false");
         }
         if(user_input == NULL){
-            strcat(json, "\"user_input\":"); strcat(json, "nullsss");
+            strcat(json, "\"user_input\":"); strcat(json, "null");
 
         }else {
-            strcat(json, "\"user_input\":"); strcat(json, user_input);
+            strcat(json, "\"user_input\":"); strcat(json, *user_input);
         }
     strcat(json, "}");
     return json;

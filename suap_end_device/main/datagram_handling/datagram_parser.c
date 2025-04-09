@@ -171,7 +171,7 @@ int parse_actuator_datagram(char *json, int *new_state){
     return 0;
 }
 
-int parse_user_datagram(char *json, char *message, bool *input_required){
+int parse_user_datagram(char *json, char *message, bool *input_required, int *user_input){
     const cJSON *main_request = NULL;
     cJSON *pom = NULL;
 
@@ -187,13 +187,22 @@ int parse_user_datagram(char *json, char *message, bool *input_required){
         }
     *message = pom->valuestring;
     pom = cJSON_GetObjectItemCaseSensitive(main_request, "input_required");
-    if (cJSON_IsTrue(pom) == 0) {
-        *input_required = false;
-    }else if (cJSON_IsTrue(pom) == 1) {
+    if (cJSON_IsTrue(pom)) {
         *input_required = true;
+    }else if (cJSON_IsFalse(pom)) {
+        *input_required = false;
     }else{
         ESP_LOGE(pars, "zahtjev za ulazom nije bool");
            return -3;
+    }
+    pom = cJSON_GetObjectItemCaseSensitive(main_request, "user_input");
+        if (!cJSON_IsNumber(pom) && !cJSON_IsNull(pom)){
+           ESP_LOGE(pars, "poruka nije string");
+           return -2;
+        }
+    *user_input = pom->valueint;
+    if(cJSON_IsNull(pom)){
+        *user_input = NULL;
     }
    
     cJSON_Delete(main_request);
