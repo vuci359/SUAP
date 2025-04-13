@@ -32,9 +32,11 @@
 #include "drivers/encoder.h"
 #include "drivers/display.h"
 
+#include "global_variables.h"
+
 static const char *TAG = "SUAP";
 
-
+lv_disp_t *disp;
 
 //strukture podataka i funkcije za enkoder
 typedef struct
@@ -54,7 +56,7 @@ static void main_encoder_cb(uint32_t knobPosition){
 esp_lcd_touch_handle_t tp = NULL;
 #endif
 
-extern void example_lvgl_demo_ui(lv_disp_t *disp, lv_indev_t *encoder1, lv_indev_t *encoder2);
+extern void example_lvgl_demo_ui(lv_indev_t *encoder1, lv_indev_t *encoder2);
 
 
 void app_main(void)
@@ -168,7 +170,7 @@ void app_main(void)
     disp_drv.drv_update_cb = example_lvgl_port_update_callback;
     disp_drv.draw_buf = &disp_buf;
     disp_drv.user_data = panel_handle;
-    lv_disp_t *disp = lv_disp_drv_register(&disp_drv);
+    disp = lv_disp_drv_register(&disp_drv);
 
     ESP_LOGI(TAG, "Install LVGL tick timer");
     // Tick interface for LVGL (using esp_timer to generate 2ms periodic event)
@@ -226,7 +228,7 @@ void app_main(void)
     ESP_LOGI(TAG, "Display LVGL Meter Widget");
     // Lock the mutex due to the LVGL APIs are not thread-safe
     if (example_lvgl_lock(-1)) {
-        example_lvgl_demo_ui(disp, encoder1i, encoder2i);
+        example_lvgl_demo_ui(encoder1i, encoder2i);
         // Release the mutex
         example_lvgl_unlock();
     }

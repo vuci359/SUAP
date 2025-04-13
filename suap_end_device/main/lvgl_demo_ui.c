@@ -20,16 +20,10 @@
 #include <cJSON.h>
 #include "networking/http_handling.h"
 
+#include "global_variables.h"
+
 #define MIN(a,b) (((a)<(b))?(a):(b))
 #define MAX(a,b) (((a)>(b))?(a):(b))
-
-#define MAX_HTTP_RECV_BUFFER 512
-
-#define SERVER_IP "10.200.2.194:5023"
-
-#define API_GET_URL "http://"SERVER_IP"/api/SuapApi"
-
-#define API_POST_URL "http://"SERVER_IP"/api/SuapApi"
 
 #define ZADNJA_VRIJEDONST "zadnja_vrijednost"
 #define BROJAC "brojac"
@@ -165,7 +159,9 @@ static void post_event_handler(lv_event_t * e)
     else if( code == LV_EVENT_LONG_PRESSED_REPEAT )
       LV_LOG_USER("Press and Hold Event");
      char *odgovor[25];
-     post_rest_function(odgovor, API_POST_URL, button_counter);
+     char str[10];
+      sprintf(str, "%d", button_counter);
+     post_rest_function(odgovor, API_POST_URL, str);
 
     mbox1 = lv_msgbox_create(lv_layer_top(), "Poslano", odgovor, NULL, true);
     lv_obj_add_event_cb(mbox1, mevent_cb, LV_EVENT_VALUE_CHANGED, NULL);
@@ -184,7 +180,7 @@ static void post_event_handler(lv_event_t * e)
 
 
 
-void example_lvgl_demo_ui(lv_disp_t *disp, lv_indev_t *encoder1i, lv_indev_t *encoder2i)
+void example_lvgl_demo_ui(lv_indev_t *encoder1i, lv_indev_t *encoder2i)
 {
     lv_obj_t *scr = lv_disp_get_scr_act(disp);
     g = lv_group_create();

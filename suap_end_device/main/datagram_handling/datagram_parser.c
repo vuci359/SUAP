@@ -149,7 +149,7 @@ int parse_sensor_datagram(char *json, int* measurement, char* unit){
     cJSON_Delete(main_request);
     return -1;
 }
-int parse_actuator_datagram(char *json, int *new_state){
+int parse_actuator_datagram(char *json, int *old_state, int *new_state){
     const cJSON *main_request = NULL;
     cJSON *pom = NULL;
 
@@ -158,12 +158,20 @@ int parse_actuator_datagram(char *json, int *new_state){
         ESP_LOGE(pars, "Novo stanje je NULL!!!");
         return -1;
     }
+
+    pom = cJSON_GetObjectItemCaseSensitive(main_request, "old_state");
+        if (!cJSON_IsNumber(pom)){
+           ESP_LOGE(pars, "Novo stanje nije broj");
+           return -2;
+        }
+    *old_state = pom->valuestring;
+
     pom = cJSON_GetObjectItemCaseSensitive(main_request, "new_state");
         if (!cJSON_IsNumber(pom)){
            ESP_LOGE(pars, "Novo stanje nije broj");
            return -2;
         }
-        *new_state = pom->valuestring;
+    *new_state = pom->valuestring;
     
     cJSON_Delete(main_request);
     cJSON_Delete(pom);

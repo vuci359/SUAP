@@ -31,7 +31,7 @@
 
 extern SemaphoreHandle_t lvgl_mux;
 
-static const char *disp = "display";
+static const char *dispLOG = "display";
 
 // Using SPI2 in the example
 #define LCD_HOST  SPI2_HOST
@@ -53,15 +53,14 @@ static const char *disp = "display";
 //////////////////// Please update the following configuration according to your LCD spec //////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #define EXAMPLE_LCD_PIXEL_CLOCK_HZ     (20 * 1000 * 1000)
-#define EXAMPLE_LCD_BK_LIGHT_ON_LEVEL  1
-#define EXAMPLE_LCD_BK_LIGHT_OFF_LEVEL !EXAMPLE_LCD_BK_LIGHT_ON_LEVEL
+
 #define EXAMPLE_PIN_NUM_SCLK           18
 #define EXAMPLE_PIN_NUM_MOSI           19
 #define EXAMPLE_PIN_NUM_MISO           21
 #define EXAMPLE_PIN_NUM_LCD_DC         16
 #define EXAMPLE_PIN_NUM_LCD_RST        23
 #define EXAMPLE_PIN_NUM_LCD_CS         5
-#define EXAMPLE_PIN_NUM_BK_LIGHT       4
+
 #define EXAMPLE_PIN_NUM_TOUCH_CS       15
 
 // The pixel number in horizontal and vertical
@@ -187,7 +186,7 @@ static void example_increase_lvgl_tick(void *arg)
 
 static void example_lvgl_port_task(void *arg)
 {
-    ESP_LOGI(disp, "Starting LVGL task");
+    ESP_LOGI(dispLOG, "Starting LVGL task");
     uint32_t task_delay_ms = EXAMPLE_LVGL_TASK_MAX_DELAY_MS;
     while (1) {
         // Lock the mutex due to the LVGL APIs are not thread-safe

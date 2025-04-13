@@ -15,12 +15,15 @@
 #include "esp_netif.h"
 #include "esp_event.h"
 #include "networking/http_handling.h"
+#include "global_variables.h"
 
 int current_logical_clock = 0;
 
 //string sizes
 #define REQUEST_STRING_SIZE 300
-#define REQUEST_BODY_SIZE 100
+#define REQUEST_BODY_SIZE 200
+#define REQUEST_DATA_SIZE 100
+
 #define MESSAGE_SIZE 50
 
 //network_type
@@ -34,7 +37,7 @@ int current_logical_clock = 0;
 #define MESSAGE 2
 
 //device type
-#define SENSOR 0;
+#define SENSOR 0
 #define ACTUATOR 1
 #define USER 2
 
@@ -53,7 +56,7 @@ const char *pars = "main request parser";
 int parse_datagram(char *json, char *ID, char *network, int *network_type, char *interface, int *sourceID, int *targetID, char *body);
 int parse_datagram_body(char *json, int *request_type, int *device_type, int *logical_clock, int *device_id, char *data);
 int parse_sensor_datagram(char *json, int *measurement, char *unit);
-int parse_actuator_datagram(char *json, int *new_state);
+int parse_actuator_datagram(char *json, int *old_state,int *new_state);
 int parse_user_datagram(char *json, char *message, bool *input_required, int *user_input);
 
 //generator
@@ -63,7 +66,13 @@ char* generate_sensor_datagram(int *measurement, char* unit);
 char* generate_actuator_datagram(int *oldstate, int *new_state);
 char* generate_user_datagram(char *message, bool *input_required, int *userinput);
 
+//main_request_parser
+int read_data_from_sensor(int *sensor_id, int *value, char *unit);
+int set_actuator_state(int *actuator_id, int *new_state);
+int get_actuator_state(int *actuator_id, int *new_state);
 
+int display_message_to_user(char *message, bool *input_required, int *answer);
 
+int parse_request(char *request);
 
 #endif

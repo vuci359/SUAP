@@ -45,6 +45,7 @@
         "request_handling.h": "c",
         "datagram_handling.h": "c",
         "limits": "c",
-        "esp_netif.h": "c"
+        "esp_netif.h": "c",
+        "esp_lcd_panel_io.h": "c"
     }
 }

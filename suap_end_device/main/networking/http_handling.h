@@ -22,7 +22,7 @@ static const char *TAGhttp = "HTTP";
 extern char responseBuffer[MAX_HTTP_RECV_BUFFER];
 esp_err_t client_event_http_handler(esp_http_client_event_handle_t evt);
 
-static void post_rest_function(char* odgovor, const char *URL, int broj)
+static void post_rest_function(char* odgovor, const char *URL, char* post_data)
 {
     esp_http_client_config_t config_post = {
         .url = URL,
@@ -35,10 +35,10 @@ static void post_rest_function(char* odgovor, const char *URL, int broj)
         
     esp_http_client_handle_t client = esp_http_client_init(&config_post);
 
-    char  *post_data[20];
+    //char  *post_data[20];
 
 
-    sprintf(post_data,"%d", broj);
+    //sprintf(post_data,"%d", data);
     
     esp_http_client_set_post_field(client, post_data, strlen(post_data));
     //tu se puniju headeri
