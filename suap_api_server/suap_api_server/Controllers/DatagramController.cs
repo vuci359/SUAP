@@ -17,7 +17,7 @@ namespace suap_api_server.Controllers;
 
 public class  DatagramController: ControllerBase
 {
-    private static new Dictionary<int,Queue<MainDatagram>> _message_queue = new Dictionary<int,Queue<MainDatagram>>(); //static jer se kontroleri stvaraju odvojeno za svaki poziv
+    private static Dictionary<int,Queue<MainDatagram>> _message_queue = new Dictionary<int,Queue<MainDatagram>>(); //static jer se kontroleri stvaraju odvojeno za svaki poziv
 
     public DatagramController()
     {
