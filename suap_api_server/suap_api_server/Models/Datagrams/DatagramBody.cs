@@ -8,38 +8,29 @@ using Newtonsoft.Json;
 
 namespace suap_api_server.Models.Datagrams;
 
-public class MainDatagram{
-	public MainDatagram(){
+public class DatagramBody{
+	public DatagramBody(){
 
     }
 
-	public string ID{ //ID poruke
+	public int request_type{ //ID poruke
         get;
         set;
     }
 
-	public string network{ //ID mreže
+	public int device_type{ //ID mreže
         get;
         set;
     }
-    public int network_type{ //tip mreže
+    public int logical_clock{ //tip mreže
         get;
         set;
     }
-    [JsonPropertyName("interface")]
-    public string _interface {
+    public string device_id {
         get;
         set;
     }
-    public int sourceID{
-        get;
-        set;
-    } 
-    public int targetID{
-        get;
-        set;
-    }
-    public DatagramBody body{
+    public BodyData data{
         get;
         set;
     }
