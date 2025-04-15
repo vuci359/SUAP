@@ -3,29 +3,20 @@ using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.AspNetCore.Authorization;
 using Newtonsoft.Json;
 
+
 namespace suap_api_server.Models.Devices;
 
-public class EndDevice{
-	public EndDevice(){}
+public class Device{
+	public Device(){}
 
-	public int ID{
+	public int device_type{
         get;
         set;
     }
 
-	public string IP{
+	public int device_id{
         get;
         set;
     }
-
-	public string MAC{
-        get;
-        set;
-    }
-
-	public List<Device> devices{
-		get;
-		set;
-	}
 
 }

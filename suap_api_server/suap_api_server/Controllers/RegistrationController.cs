@@ -1,22 +1,3 @@
-/*
-
-//  TODO 4.1  Registracija
-    @RequestMapping(value = "/register", method = RequestMethod.POST)
-    public ResponseEntity<?> register(@RequestBody Sensor sensor) {
-        if (sensorService.register(sensor)) {
-            return ResponseEntity.status(HttpStatus.CREATED).header(HttpHeaders.LOCATION, sensor.getLocation()).build();
-        }
-        else {
-            return null;
-        }
-    }
-    //  TODO 4.4  Popis senzora
-    @RequestMapping(value = "/getSensors", method = RequestMethod.GET)
-    public List<Sensor> getSensors() {
-        return sensorService.getSensors();
-
-    }
-*/
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Cors;
@@ -26,6 +7,7 @@ using static Microsoft.AspNetCore.Http.StatusCodes;
 
 using suap_api_server.Models;
 using suap_api_server.Models.Data;
+using suap_api_server.Models.Devices;
 namespace suap_api_server.Controllers;
 
 [ApiController]
@@ -34,7 +16,7 @@ namespace suap_api_server.Controllers;
 
 public class  RegistrationController: ControllerBase
 {
-    private static Array<EndDevice> = new Array<EndDevice>(); //static jer se kontroleri stvaraju odvojeno za svaki poziv
+    private static List<EndDevice> _nodes = new List<EndDevice>(); //static jer se kontroleri stvaraju odvojeno za svaki poziv
 
     public RegistrationController()
     {
@@ -47,8 +29,13 @@ public class  RegistrationController: ControllerBase
     [SwaggerResponse(Status404NotFound)]
     public IActionResult Register(){
         try{
-            System.Console.WriteLine("Poslal sam: "+_data.prosjek);
-            return Ok(_data);
+            var node = new EndDevice();
+            if(_nodes.Contains(node)){
+                return StatusCode(208);
+            }else{
+                _nodes.Add(node);
+                return Ok(node);
+            }
         }catch(Exception e){
             Console.WriteLine(e.Message);
             return NotFound();
@@ -59,18 +46,11 @@ public class  RegistrationController: ControllerBase
     [ActionName("GetPeers")]
     [SwaggerResponse(Status200OK)]
     [SwaggerResponse(Status404NotFound)]
-    public IActionResultGetPeers([FromBody] int broj){
+    public IActionResult GetPeers(){
 
         try{
-            _data.brojac = _data.brojac+1;
-            _data.zadnja_vrijednost = broj;
-            _data.prosjek = (_data.prosjek+broj)/2;
-            System.Console.WriteLine("Dobil sam: "+_data.prosjek);
-
-            return Ok(broj);
-        }catch(Exception e){
-            System.Console.WriteLine(e);
-            
+            return Ok(_nodes);
+        }catch(Exception e){  
             return NotFound();
         }
     }
