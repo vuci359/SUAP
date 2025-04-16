@@ -57,4 +57,21 @@ public class  DatagramController: ControllerBase
             return NotFound();
         }
     }
+    [HttpGet]
+    [ActionName("MessageCount")]
+    [SwaggerResponse(Status200OK)]
+    [SwaggerResponse(Status404NotFound)]
+    public IActionResult MessageCount([FromBody] int deviceID){
+
+       try{
+         if(!_message_queue.ContainsKey(deviceID)){
+            return Ok(0); //nema poruka za čvor
+         }else{
+            return Ok(_message_queue[deviceID].Count);
+         }
+        }catch(Exception e){
+            Console.WriteLine(e.Message);
+            return NotFound();
+        }
+    }
 }
