@@ -19,6 +19,10 @@ extern lv_disp_t *disp; //samo spominjem da postoji negdje u memoriji
 
 #define API_POST_URL "http://"SERVER_IP"/api/SuapApi"
 
+#define PERIPHERAL_DEVICES "sfgsr"
+
+//dopisati par requestova
+
 extern lv_obj_t * mbox1;
 extern lv_obj_t * mbox2;
 
