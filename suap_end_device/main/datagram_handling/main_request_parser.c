@@ -31,13 +31,13 @@ int parse_request(char *request){
 
 //tu razbiti na metode za trančirati request i reply
 
-    if(device_type == SENSOR){ //neznam zakaj tu crveno podcrtava...
+    if(device_type == IOT_SENZOR){ //neznam zakaj tu crveno podcrtava...
        // err = parse_sensor_datagram(data, &measurement, unit); //treba mi za reply
        // err = display_sensor_data_to_user(sourceID, device_id, measurement, unit); //za prekapati reply
        err = read_data_from_sensor(&device_id, &measurement, unit);
        //stvaranje odgovora
        reply = generate_datagram(ID, network, &network_type, interface, &sourceID, &targetID,
-                                    generate_datagram_body(REPLY, SENSOR, &current_logical_clock, &device_id,
+                                    generate_datagram_body(REPLY, IOT_SENZOR, &current_logical_clock, &device_id,
                                         generate_sensor_datagram(&measurement, unit)));
         ESP_LOGI(pars, "%s", odg);
 
@@ -47,7 +47,7 @@ int parse_request(char *request){
         err = get_actuator_state(&device_id, &old_state);
         err = set_actuator_state(&device_id, &new_state);
         reply = generate_datagram(ID, network, &network_type, interface, &sourceID, &targetID,
-                                    generate_datagram_body(REPLY, SENSOR, &current_logical_clock, &device_id,
+                                    generate_datagram_body(REPLY, IOT_SENZOR, &current_logical_clock, &device_id,
                                         generate_actuator_datagram(&old_state, &new_state)));
 
 
@@ -56,7 +56,7 @@ int parse_request(char *request){
         err = display_message_to_user(message, &input_required, &answer);
         err = generate_user_datagram(NULL, &input_required, &answer);
         reply = generate_datagram(ID, network, &network_type, interface, &sourceID, &targetID,
-                                    generate_datagram_body(REPLY, SENSOR, &current_logical_clock, &device_id,
+                                    generate_datagram_body(REPLY, IOT_SENZOR, &current_logical_clock, &device_id,
                                         generate_user_datagram(NULL, &input_required, &answer)));
                                     
 

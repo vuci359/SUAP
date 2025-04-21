@@ -15,7 +15,7 @@
 #define MESSAGE 2
 
 //device type
-#define SENSOR 0
+#define IOT_SENZOR 0
 #define ACTUATOR 1
 #define USER 2
 
@@ -36,7 +36,7 @@
 //varijable koje su kritične za razmjenu veđu funkcijama
 extern lv_disp_t *disp; //samo spominjem da postoji negdje u memoriji
 
-#define MAX_HTTP_RECV_BUFFER 512
+#define MAX_HTTP_RECV_BUFFER 1024
 
 #define SERVER_IP "10.200.2.194:5023"
 
@@ -46,8 +46,7 @@ extern lv_disp_t *disp; //samo spominjem da postoji negdje u memoriji
 
 #define API_POST_URL BASE_URL"/SuapApi"
 
-#define PERIPHERAL_DEVICES "[{\"device_type\":"SENSOR", \"device_id\": "WLAN0"}, {\"device_type\":"ACTUATOR", \"device_id\": "BACKLIGHT0"}, {\"device_type\":"USER", \"device_id\": "USER0"}]" //dovršiti...
-
+#define PERIPHERAL_DEVICES "[{\"device_type\": 0, \"device_id\": 0}, {\"device_type\": 1, \"device_id\": 1}, {\"device_type\": 2, \"device_id\": 2}]"
 //dopisati par requestova
 
 extern lv_obj_t * mbox1;

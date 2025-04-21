@@ -6,6 +6,7 @@
 #include "freertos/semphr.h"
 #include "freertos/queue.h"
 #include "esp_log.h"
+#include "global_variables.h"
 
 #define MIN(a,b) (((a)<(b))?(a):(b))
 #define MAX(a,b) (((a)>(b))?(a):(b))
@@ -16,8 +17,6 @@
 #include "esp_http_client.h"
 
 static const char *TAGhttp = "HTTP";
-
-#define MAX_HTTP_RECV_BUFFER 1024
 
 extern char postResponseBuffer[MAX_HTTP_RECV_BUFFER];
 extern char responseBuffer[MAX_HTTP_RECV_BUFFER];
