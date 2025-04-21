@@ -4,8 +4,9 @@ const char *predef_tasks = "predefined tasks";
 
 
 int my_ID;
-int neigbour_IDs[100];
-int neigbour_count;
+int neighbour_count;
+end_device neighbours[100];
+
 
 esp_netif_ip_info_t ip_info;
 esp_netif_t* netif=NULL;
@@ -13,6 +14,7 @@ unsigned char mac[6] = {0};
 char podaci[500], odgovor[100];
 char mac_addr[30], IP_addr[20];
 char query[500];
+
 
 int register_end_device(){
     netif = esp_netif_get_handle_from_ifkey("WIFI_STA_DEF");
@@ -73,6 +75,38 @@ int get_neigbours(){
     char mac_addr[30], IP_addr[20];
     char query[200];
 
+    cJSON *elem;
+    cJSON *pom, *subpom;
+    cJSON *root = cJSON_Parse(podaci);
+    if(root == NULL){
+        ESP_LOGE(predef_tasks, "JSON je NULL");
+        return -1;
+    }
+    int n = cJSON_GetArraySize(root);
+    int p = 0;
+    for (int i = 0; i < n; i++) {
+        elem = cJSON_GetArrayItem(root, i);
+        pom = cJSON_GetObjectItem(elem, "ID");
+        if (!cJSON_IsNumber(pom)){
+            ESP_LOGE(predef_tasks, "ID nije int");
+            return -2;
+        }
+        if(pom->valueint == my_ID){
+            continue;   //preskače sam sebe
+        }
+        neighbours[p].ID = pom->valueint;
+        pom = cJSON_GetObjectItem(elem, "IP");
+        if (!cJSON_IsString(pom)){
+            ESP_LOGE(predef_tasks, "IP nije string");
+            return -2;
+        }
+        free(neighbours[p].IP); //brisanje starog
+        neighbours[p].IP = malloc(strlen(pom->valuestring)+1); //rezerviranje za novo
+        strcpy(neighbours[p].IP, pom->valuestring); //punjenje
+
+        p++;
+    }
+    neighbour_count = n-1;
 
     return 0;
 }

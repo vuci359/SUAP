@@ -66,8 +66,9 @@ typedef struct {
 
 typedef struct{
     int ID;
-    char MAC[30];
-    attached_device devices[5]; //pretpostavljam do 5 perifernih uređaja
+    char *IP;
+    char *MAC;
+    attached_device *devices; //pretpostavljam do 5 perifernih uređaja
 } end_device;
 
 
