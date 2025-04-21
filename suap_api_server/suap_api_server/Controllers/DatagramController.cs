@@ -25,6 +25,7 @@ public class  DatagramController: ControllerBase
     }
     [HttpPost]
     [ActionName("PushMessage")]
+    [Route("PushMessage")]
     [SwaggerResponse(Status208AlreadyReported)]
     [SwaggerResponse(Status404NotFound)]
     public IActionResult PushMessage([FromBody] MainDatagram json_data){
@@ -42,6 +43,7 @@ public class  DatagramController: ControllerBase
 
     [HttpGet]
     [ActionName("PopMessage")]
+    [Route("PopMessage")]
     [SwaggerResponse(Status200OK)]
     [SwaggerResponse(Status404NotFound)]
     public IActionResult PopMessage([FromBody] int deviceID){
@@ -57,8 +59,9 @@ public class  DatagramController: ControllerBase
             return NotFound();
         }
     }
- /*   [HttpGet]
+    [HttpGet]
     [ActionName("MessageCount")]
+    [Route("MessageCount")]
     [SwaggerResponse(Status200OK)]
     [SwaggerResponse(Status404NotFound)]
     public IActionResult MessageCount([FromBody] int deviceID){
@@ -74,5 +77,4 @@ public class  DatagramController: ControllerBase
             return NotFound();
         }
     }
-    */
 }
