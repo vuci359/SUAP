@@ -4,6 +4,31 @@
 #include "lvgl.h"
 #include "driver/gpio.h"
 
+//network_type
+#define WiFi 0
+#define ZigBee 1
+#define LoRa 2
+
+//request_type
+#define REQUEST 0
+#define REPLY 1
+#define MESSAGE 2
+
+//device type
+#define SENSOR 0
+#define ACTUATOR 1
+#define USER 2
+
+
+//senzori
+#define WLAN0 0
+
+//aktuatori
+#define BACKLIGHT0 1
+
+//user
+#define USER0 2
+
 #define EXAMPLE_PIN_NUM_BK_LIGHT       4
 #define EXAMPLE_LCD_BK_LIGHT_ON_LEVEL  1
 #define EXAMPLE_LCD_BK_LIGHT_OFF_LEVEL !EXAMPLE_LCD_BK_LIGHT_ON_LEVEL
@@ -21,7 +46,7 @@ extern lv_disp_t *disp; //samo spominjem da postoji negdje u memoriji
 
 #define API_POST_URL BASE_URL"/SuapApi"
 
-#define PERIPHERAL_DEVICES "sfgsr" //dovršiti...
+#define PERIPHERAL_DEVICES "[{\"device_type\":"SENSOR", \"device_id\": "WLAN0"}, {\"device_type\":"ACTUATOR", \"device_id\": "BACKLIGHT0"}, {\"device_type\":"USER", \"device_id\": "USER0"}]" //dovršiti...
 
 //dopisati par requestova
 
@@ -31,9 +56,9 @@ extern lv_obj_t * mbox2;
 extern lv_group_t * g;
 extern lv_group_t * g2;
 
-int my_ID;
-int neigbour_IDs[100];
-int neigbour_count = 0;
+extern int my_ID;
+extern int neigbour_IDs[100];
+extern int neigbour_count;
 
 typedef struct {
     int dev_type;

@@ -17,35 +17,46 @@
 
 static const char *TAGhttp = "HTTP";
 
-#define MAX_HTTP_RECV_BUFFER 512
+#define MAX_HTTP_RECV_BUFFER 1024
 
+extern char postResponseBuffer[MAX_HTTP_RECV_BUFFER];
 extern char responseBuffer[MAX_HTTP_RECV_BUFFER];
+
 esp_err_t client_event_http_handler(esp_http_client_event_handle_t evt);
 
-static void post_rest_function(char * return_data, char* odgovor, const char *URL, char* post_data)
+static int post_rest_function(char * return_data, char* odgovor, const char *URL, char* post_data)
 {
+    int status = 0;
     esp_http_client_config_t config_post = {
         .url = URL,
         .method = HTTP_METHOD_POST,
         .cert_pem = NULL,
         //.user_data = body_data,
         .event_handler = client_event_http_handler,
+        .transport_type = HTTP_TRANSPORT_OVER_TCP,
+        .user_data = postResponseBuffer,
         .buffer_size = MAX_HTTP_RECV_BUFFER
         };
-        
+        ESP_LOGI(TAGhttp, "priprema 1");
+
     esp_http_client_handle_t client = esp_http_client_init(&config_post);
 
     //char  *post_data[20];
+    ESP_LOGI(TAGhttp, "priprema 2");
 
 
     //sprintf(post_data,"%d", data);
     
     esp_http_client_set_post_field(client, post_data, strlen(post_data));
     //tu se puniju headeri
+    ESP_LOGI(TAGhttp, "priprema 3");
+
     //esp_http_client_set_header(client, "Authorisation", "Basic aW50c3R2X3NtYXJ0cGFya2luZzpmZlozUElnM2tqc3JoVU1S");
     esp_http_client_set_header(client, "Content-Type", "application/json; charset=utf-8");
+    ESP_LOGI(TAGhttp, "pokusavam_odraditi");
     //esp_http_client_set_header(client, "Cache-Control", "no-cache");
     esp_err_t err = esp_http_client_perform(client);
+    ESP_LOGI(TAGhttp, "probal_odraditi");
 
     //odgovor = "AABBCC";
 
@@ -59,19 +70,21 @@ static void post_rest_function(char * return_data, char* odgovor, const char *UR
     } else {
         printf("HTTP POST request failed: %s\n", esp_err_to_name(err));
         sprintf(odgovor,"FAIL");
+        status = -1;
     }
 
     esp_http_client_cleanup(client);
-    printf("%s\n", responseBuffer);
-    strcpy(return_data, responseBuffer); 
-   // return status;
+    printf("%s\n", postResponseBuffer);
+    strcpy(return_data, postResponseBuffer); 
+    return status;
 }
 
 //primjer get funkcije
 //get_rest_function(CONFIG_DATA_URL"?res="CONFIG_ID_NAZIV"&maxPayloadsPerResource=1", "res="CONFIG_ID_NAZIV"&maxPayloadsPerResource=1", CONFIG_USER_NAME, CONFIG_USER_PASSWORD)
 
-static void get_rest_function(char * return_data, char* odgovor, const char *URL, const char *QUERY)
+static int get_rest_function(char * return_data, char* odgovor, const char *URL, const char *QUERY)
 {
+    int status = 0;
   esp_http_client_config_t config_get = {
         .url = URL,
         .method = HTTP_METHOD_GET,
@@ -107,6 +120,7 @@ static void get_rest_function(char * return_data, char* odgovor, const char *URL
     } else {
         printf("HTTP GET request failed: %s\n", esp_err_to_name(err));
         sprintf(odgovor,"FAIL");
+        status = -1;
     }   // printf("%s\n", return_data);
 
     esp_http_client_cleanup(client);
@@ -114,6 +128,7 @@ static void get_rest_function(char * return_data, char* odgovor, const char *URL
     strcpy(return_data, responseBuffer); 
    // return_data = body_data;
    // printf("%s\n", return_data);
+   return status;
 }
 
 

@@ -26,27 +26,6 @@ int current_logical_clock = 0;
 
 #define MESSAGE_SIZE 50
 
-//network_type
-#define WiFi 0
-#define ZigBee 1
-#define LoRa 2
-
-//request_type
-#define REQUEST 0
-#define REPLY 1
-#define MESSAGE 2
-
-//device type
-#define SENSOR 0
-#define ACTUATOR 1
-#define USER 2
-
-
-//senzori
-#define WLAN0 0
-
-//aktuatori
-#define BACKLIGHT0 0
 
 //parser
 

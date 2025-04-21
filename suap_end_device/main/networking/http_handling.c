@@ -1,6 +1,8 @@
 #include "http_handling.h"
 
 char responseBuffer[MAX_HTTP_RECV_BUFFER] = {0};
+char postResponseBuffer[MAX_HTTP_RECV_BUFFER] = {0};
+
 
 
 esp_err_t client_event_http_handler(esp_http_client_event_handle_t evt)

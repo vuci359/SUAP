@@ -1,3 +1,4 @@
+#pragma once
 #ifndef inc_tasks_h_ccc
 #define inc_tasks_h_ccc
 #include "networking/http_handling.h"
@@ -9,7 +10,9 @@
 #include <cJSON.h>
 
 
-const char *predef_tasks = "predefined tasks";
+extern const char *predef_tasks;
+
+
 
 int register_end_device();
 int get_neigbours();

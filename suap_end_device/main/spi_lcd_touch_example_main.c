@@ -217,17 +217,27 @@ void app_main(void)
 
     lvgl_mux = xSemaphoreCreateRecursiveMutex();
     assert(lvgl_mux);
+
+
+
     ESP_LOGI(TAG, "Create LVGL task");
+
+
     xTaskCreate(example_lvgl_port_task, "LVGL", EXAMPLE_LVGL_TASK_STACK_SIZE, NULL, EXAMPLE_LVGL_TASK_PRIORITY, NULL);
 
-    int err = register_end_device();
-    ESP_LOGI(TAG, "Register function ended with status %d", err);
+
 
 
     ESP_ERROR_CHECK(nvs_flash_init());
     ESP_ERROR_CHECK(esp_netif_init());
     ESP_ERROR_CHECK(esp_event_loop_create_default());
     ESP_ERROR_CHECK(example_connect());
+
+
+    ESP_LOGI(TAG, "Register device");
+
+    int err = register_end_device();
+    ESP_LOGI(TAG, "Register function ended with status %d", err);
 
     ESP_LOGI(TAG, "Display LVGL Meter Widget");
     // Lock the mutex due to the LVGL APIs are not thread-safe

@@ -47,6 +47,7 @@
         "limits": "c",
         "esp_netif.h": "c",
         "esp_lcd_panel_io.h": "c",
-        "esp_mac.h": "c"
+        "esp_mac.h": "c",
+        "global_variables.h": "c"
     }
 }

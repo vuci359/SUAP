@@ -1,10 +1,15 @@
 #include "tasks.h"
 
+const char *predef_tasks = "predefined tasks";
 
+
+int my_ID;
+int neigbour_IDs[100];
+int neigbour_count;
 
 esp_netif_ip_info_t ip_info;
 unsigned char mac[6] = {0};
-char podaci[100], odgovor[100];
+char podaci[500], odgovor[100];
 char mac_addr[30], IP_addr[20];
 char query[200];
 
@@ -22,24 +27,36 @@ int register_end_device(){
     strcat(query, ", \"ďevices\":");
     strcat(query, PERIPHERAL_DEVICES); //priprema za dinamičko generiranje
     strcat(query, "}");
+    printf("%s", query);
+    ESP_LOGI(predef_tasks, "PPPP");
 
-    post_rest_function(podaci, odgovor, BASE_URL"/Registration", query);
 
-    const cJSON *main_request = NULL;
-    cJSON *pom = NULL;
+    int status = post_rest_function(podaci, odgovor, BASE_URL"/Registration", query);
 
-    main_request = cJSON_Parse(podaci);
-    if(main_request == NULL){
-        ESP_LOGE(predef_tasks, "JSON je NULL");
-        return -1;
-    }
-    
-        pom = cJSON_GetObjectItemCaseSensitive(main_request, "ID");
-        if (!cJSON_IsNumber(pom)){
-           ESP_LOGE(predef_tasks, "ID nije int");
-           return -2;
+    ESP_LOGI(predef_tasks, "GRES");
+
+    if(status == 0){
+
+        const cJSON *main_request = NULL;
+        cJSON *pom = NULL;
+
+        main_request = cJSON_Parse(podaci);
+        if(main_request == NULL){
+            ESP_LOGE(predef_tasks, "JSON je NULL");
+            return -1;
         }
-        my_ID = pom->valueint;
+        
+            pom = cJSON_GetObjectItemCaseSensitive(main_request, "ID");
+            if (!cJSON_IsNumber(pom)){
+            ESP_LOGE(predef_tasks, "ID nije int");
+            return -2;
+            }
+            else{
+                my_ID = pom->valueint;
+            }
+    }
+    ESP_LOGI(predef_tasks, "CCCC");
+
 
     //napraviti task za povlačenje podataka o susjedima...a
 
