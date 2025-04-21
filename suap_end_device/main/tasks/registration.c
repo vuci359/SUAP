@@ -8,18 +8,21 @@ int neigbour_IDs[100];
 int neigbour_count;
 
 esp_netif_ip_info_t ip_info;
+esp_netif_t* netif=NULL;
 unsigned char mac[6] = {0};
 char podaci[500], odgovor[100];
 char mac_addr[30], IP_addr[20];
 char query[500];
 
 int register_end_device(){
-    esp_netif_get_ip_info(IP_EVENT_STA_GOT_IP,&ip_info);
+    netif = esp_netif_get_handle_from_ifkey("WIFI_STA_DEF");
+    esp_netif_get_ip_info(netif,&ip_info);
 
     esp_read_mac(mac, ESP_MAC_WIFI_STA);
     sprintf(mac_addr,"%02X:%02X:%02X:%02X:%02X:%02X", mac[0],mac[1],mac[2],mac[3],mac[4],mac[5]);
 
     sprintf(IP_addr,IPSTR, IP2STR(&ip_info.ip));
+    //printf(IPSTR, IP2STR(&ip_info.ip));
     strcat(query, "{\"ID\": -1, \"IP\": \"");
     strcat(query, IP_addr);
     strcat(query, "\", \"MAC\": \"");
@@ -46,7 +49,7 @@ int register_end_device(){
             return -1;
         }
         
-            pom = cJSON_GetObjectItemCaseSensitive(main_request, "ID");
+            pom = cJSON_GetObjectItem(main_request, "ID");
             if (!cJSON_IsNumber(pom)){
             ESP_LOGE(predef_tasks, "ID nije int");
             return -2;
