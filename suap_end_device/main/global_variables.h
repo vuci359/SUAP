@@ -15,11 +15,13 @@ extern lv_disp_t *disp; //samo spominjem da postoji negdje u memoriji
 
 #define SERVER_IP "10.200.2.194:5023"
 
-#define API_GET_URL "http://"SERVER_IP"/api/SuapApi"
+#define BASE_URL "http://"SERVER_IP"/api"
 
-#define API_POST_URL "http://"SERVER_IP"/api/SuapApi"
+#define API_GET_URL BASE_URL"/SuapApi"
 
-#define PERIPHERAL_DEVICES "sfgsr"
+#define API_POST_URL BASE_URL"/SuapApi"
+
+#define PERIPHERAL_DEVICES "sfgsr" //dovršiti...
 
 //dopisati par requestova
 
@@ -28,6 +30,22 @@ extern lv_obj_t * mbox2;
 
 extern lv_group_t * g;
 extern lv_group_t * g2;
+
+int my_ID;
+int neigbour_IDs[100];
+int neigbour_count = 0;
+
+typedef struct {
+    int dev_type;
+    int dev_id;
+} attached_device;
+
+typedef struct{
+    int ID;
+    char MAC[30];
+    attached_device devices[5]; //pretpostavljam do 5 perifernih uređaja
+} end_device;
+
 
 
 #endif

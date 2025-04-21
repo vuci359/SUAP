@@ -22,7 +22,7 @@ static const char *TAGhttp = "HTTP";
 extern char responseBuffer[MAX_HTTP_RECV_BUFFER];
 esp_err_t client_event_http_handler(esp_http_client_event_handle_t evt);
 
-static void post_rest_function(char* odgovor, const char *URL, char* post_data)
+static void post_rest_function(char * return_data, char* odgovor, const char *URL, char* post_data)
 {
     esp_http_client_config_t config_post = {
         .url = URL,
@@ -62,6 +62,8 @@ static void post_rest_function(char* odgovor, const char *URL, char* post_data)
     }
 
     esp_http_client_cleanup(client);
+    printf("%s\n", responseBuffer);
+    strcpy(return_data, responseBuffer); 
    // return status;
 }
 

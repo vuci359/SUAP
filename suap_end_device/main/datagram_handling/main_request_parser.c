@@ -22,7 +22,7 @@ int parse_request(char *request){
     char message[MESSAGE_SIZE];
     bool input_required;
     int answer;
-    char odg[25];
+    char pod[1000], odg[25];
 
     err = parse_datagram(request, ID, network, &network_type, interface, &sourceID, &targetID, body);
 
@@ -66,7 +66,7 @@ int parse_request(char *request){
         return -1;
     }
 
-    post_rest_function(*odg, API_POST_URL, reply);
+    post_rest_function(pod, odg, API_POST_URL, reply);
 
     return err;
 

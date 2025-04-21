@@ -57,7 +57,7 @@ public class  DatagramController: ControllerBase
             return NotFound();
         }
     }
-    [HttpGet]
+ /*   [HttpGet]
     [ActionName("MessageCount")]
     [SwaggerResponse(Status200OK)]
     [SwaggerResponse(Status404NotFound)]
@@ -74,4 +74,5 @@ public class  DatagramController: ControllerBase
             return NotFound();
         }
     }
+    */
 }

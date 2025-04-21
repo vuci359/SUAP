@@ -158,10 +158,10 @@ static void post_event_handler(lv_event_t * e)
       LV_LOG_USER("Click Event");
     else if( code == LV_EVENT_LONG_PRESSED_REPEAT )
       LV_LOG_USER("Press and Hold Event");
-     char *odgovor[25];
+     char podaci[100], odgovor[25];
      char str[10];
       sprintf(str, "%d", button_counter);
-     post_rest_function(odgovor, API_POST_URL, str);
+     post_rest_function(podaci, odgovor, API_POST_URL, str);
 
     mbox1 = lv_msgbox_create(lv_layer_top(), "Poslano", odgovor, NULL, true);
     lv_obj_add_event_cb(mbox1, mevent_cb, LV_EVENT_VALUE_CHANGED, NULL);

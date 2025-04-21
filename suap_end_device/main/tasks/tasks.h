@@ -6,5 +6,12 @@
 #include "esp_wifi.h"
 #include "esp_mac.h"
 
+#include <cJSON.h>
+
+
+const char *predef_tasks = "predefined tasks";
+
+int register_end_device();
+int get_neigbours();
 
 #endif

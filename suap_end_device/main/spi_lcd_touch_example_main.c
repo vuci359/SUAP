@@ -31,6 +31,7 @@
 #include "stdbool.h"
 #include "drivers/encoder.h"
 #include "drivers/display.h"
+#include "tasks/tasks.h"
 
 #include "global_variables.h"
 
@@ -218,6 +219,9 @@ void app_main(void)
     assert(lvgl_mux);
     ESP_LOGI(TAG, "Create LVGL task");
     xTaskCreate(example_lvgl_port_task, "LVGL", EXAMPLE_LVGL_TASK_STACK_SIZE, NULL, EXAMPLE_LVGL_TASK_PRIORITY, NULL);
+
+    int err = register_end_device();
+    ESP_LOGI(TAG, "Register function ended with status %d", err);
 
 
     ESP_ERROR_CHECK(nvs_flash_init());
