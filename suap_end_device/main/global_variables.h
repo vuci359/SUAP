@@ -60,8 +60,8 @@ extern int neigbour_IDs[100];
 extern int neigbour_count;
 
 typedef struct {
-    int dev_type;
-    int dev_id;
+    int device_type;
+    int device_id;
 } attached_device;
 
 typedef struct{

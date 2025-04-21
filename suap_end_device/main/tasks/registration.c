@@ -72,10 +72,9 @@ int register_end_device(){
 int get_neigbours(){
     get_rest_function(podaci, odgovor, API_POST_URL, NULL);
     char podaci[100], odgovor[100];
-    char mac_addr[30], IP_addr[20];
-    char query[200];
+  //  char mac_addr[30], IP_addr[20];
 
-    cJSON *elem;
+    cJSON *elem, *subelem;
     cJSON *pom, *subpom;
     cJSON *root = cJSON_Parse(podaci);
     if(root == NULL){
@@ -98,11 +97,45 @@ int get_neigbours(){
         pom = cJSON_GetObjectItem(elem, "IP");
         if (!cJSON_IsString(pom)){
             ESP_LOGE(predef_tasks, "IP nije string");
-            return -2;
+            return -3;
         }
         free(neighbours[p].IP); //brisanje starog
         neighbours[p].IP = malloc(strlen(pom->valuestring)+1); //rezerviranje za novo
         strcpy(neighbours[p].IP, pom->valuestring); //punjenje
+
+        pom = cJSON_GetObjectItem(elem, "MAC");
+        if (!cJSON_IsString(pom)){
+            ESP_LOGE(predef_tasks, "MAC nije string");
+            return -4;
+        }
+        free(neighbours[p].MAC); //brisanje starog
+        neighbours[p].MAC = malloc(strlen(pom->valuestring)+1); //rezerviranje za novo
+        strcpy(neighbours[p].MAC, pom->valuestring); //punjenje
+        
+        pom = cJSON_GetObjectItem(elem, "devices");
+        int k = cJSON_GetArraySize(pom);
+        
+        free(neighbours[p].devices);
+        neighbours[p].devices = malloc(k*sizeof(attached_device));
+
+        for(int j = 0; j < k; j++){
+            subelem = cJSON_GetArrayItem(pom, j);
+            subpom = cJSON_GetObjectItem(subelem, "device_type");
+            if (!cJSON_IsNumber(subpom)){
+                ESP_LOGE(predef_tasks, "Tip uredjaja nije INT");
+                return -5;
+            }
+
+            neighbours[p].devices[j].device_type = subpom->valueint;
+
+            subpom = cJSON_GetObjectItem(subelem, "device_id");
+            if (!cJSON_IsNumber(subpom)){
+                ESP_LOGE(predef_tasks, "Id uredjaja nije INT");
+                return -6;
+            }
+
+            neighbours[p].devices[j].device_id = subpom->valueint;
+        }
 
         p++;
     }
