@@ -69,10 +69,12 @@ int register_end_device(){
     return 0;
 }
 
-int get_neigbours(){
-    get_rest_function(podaci, odgovor, API_POST_URL, NULL);
-    char podaci[100], odgovor[100];
+int get_neighbours(){
+    char podaci[2000], odgovor[100];
+
+    get_rest_function(podaci, odgovor, BASE_URL"/Registration", NULL);
   //  char mac_addr[30], IP_addr[20];
+    printf("%s", podaci);
 
     cJSON *elem, *subelem;
     cJSON *pom, *subpom;
@@ -142,4 +144,12 @@ int get_neigbours(){
     neighbour_count = n-1;
 
     return 0;
+}
+
+void find_neighbours(){
+    while(1){
+        int rez = get_neighbours();
+        ESP_LOGI(predef_tasks, "Susjedi %d", rez);
+        vTaskDelay(5000/portTICK_PERIOD_MS);
+    }
 }

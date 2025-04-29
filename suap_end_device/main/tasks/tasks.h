@@ -8,13 +8,15 @@
 #include "esp_mac.h"
 
 #include <cJSON.h>
+#include "freertos/task.h"
 
 
 extern const char *predef_tasks;
 
 
 
-int register_end_device();
-int get_neigbours();
+extern int register_end_device();
+extern int get_neighbours();
+void find_neighbours();
 
 #endif

@@ -71,6 +71,8 @@ typedef struct{
     attached_device *devices; //pretpostavljam do 5 perifernih uređaja
 } end_device;
 
-
+extern int my_ID;
+extern int neighbour_count;
+extern end_device neighbours[100];
 
 #endif

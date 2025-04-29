@@ -235,9 +235,11 @@ void app_main(void)
 
 
     ESP_LOGI(TAG, "Register device");
-
     int err = register_end_device();
     ESP_LOGI(TAG, "Register function ended with status %d", err);
+    xTaskCreate(find_neighbours, "Neighbours", 8192, NULL, EXAMPLE_LVGL_TASK_PRIORITY, NULL);
+
+
 
     ESP_LOGI(TAG, "Display LVGL Meter Widget");
     // Lock the mutex due to the LVGL APIs are not thread-safe
