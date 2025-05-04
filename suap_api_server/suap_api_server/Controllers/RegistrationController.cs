@@ -33,7 +33,7 @@ public class  RegistrationController: ControllerBase
     public IActionResult Register([FromBody] EndDevice node){
         try{
             //var node = new EndDevice();
-            if(_nodes.Exists(x => x.ID == node.ID)){ //preraditi da uspoređuje MAC adrese i ažurira po potrebi
+            if(_nodes.Exists(x => x.MAC == node.MAC)){ //preraditi da uspoređuje MAC adrese i ažurira po potrebi
                 return StatusCode(208); //ne podržava zamjenu IP adrese, moguće rješiti naknadno s provjerom MAC umjesto ID i vračanjem podataka uz kod 208
             }else{
                 node.ID = rnd.Next(100); //pretpostavlja se do 100 uređaja; //nije idealno,moguće ponavljanje
