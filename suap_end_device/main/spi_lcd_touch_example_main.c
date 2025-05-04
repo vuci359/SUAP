@@ -238,6 +238,8 @@ void app_main(void)
     int err = register_end_device();
     ESP_LOGI(TAG, "Register function ended with status %d", err);
     xTaskCreate(find_neighbours, "Neighbours", 8192, NULL, EXAMPLE_LVGL_TASK_PRIORITY, NULL);
+    xTaskCreate(get_messages, "Neighbours", 8192, NULL, EXAMPLE_LVGL_TASK_PRIORITY, NULL);
+
 
 
 

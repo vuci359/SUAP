@@ -19,4 +19,8 @@ extern int register_end_device();
 extern int get_neighbours();
 void find_neighbours();
 
+int getMessage(char *message);
+int getMessageCount(int *message_count);
+void get_messages();
+
 #endif

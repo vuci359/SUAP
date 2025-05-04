@@ -41,12 +41,12 @@ public class  DatagramController: ControllerBase
         }
     }
 
-    [HttpGet]
-    [ActionName("PopMessage")]
-    [Route("PopMessage")]
+    [HttpGet("PopMessage/{deviceID}")]
+    //[ActionName("PopMessage")]
+    //[Route("PopMessage")]
     [SwaggerResponse(Status200OK)]
     [SwaggerResponse(Status404NotFound)]
-    public IActionResult PopMessage([FromBody] int deviceID){
+    public IActionResult PopMessage(int deviceID){
 
        try{
          if(!_message_queue.ContainsKey(deviceID)){
@@ -59,12 +59,12 @@ public class  DatagramController: ControllerBase
             return NotFound();
         }
     }
-    [HttpGet]
-    [ActionName("MessageCount")]
-    [Route("MessageCount")]
+    [HttpGet("MessageCount/{deviceID}")]
+    //[ActionName("MessageCount")]
+    //[Route("MessageCount")]
     [SwaggerResponse(Status200OK)]
     [SwaggerResponse(Status404NotFound)]
-    public IActionResult MessageCount([FromBody] int deviceID){
+    public IActionResult MessageCount(int deviceID){
 
        try{
          if(!_message_queue.ContainsKey(deviceID)){
