@@ -1,5 +1,7 @@
 #include "datagram_handling.h"
 
+lv_obj_t * mbox2;
+
 
 void update_logical_clock(int *logical_clock){
     current_logical_clock = fmax(current_logical_clock, *logical_clock) + 1;

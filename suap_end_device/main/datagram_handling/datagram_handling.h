@@ -17,7 +17,6 @@
 #include "networking/http_handling.h"
 #include "global_variables.h"
 
-int current_logical_clock = 0;
 
 //string sizes
 #define REQUEST_STRING_SIZE 300
@@ -31,7 +30,6 @@ int current_logical_clock = 0;
 
 //target_id se vadi iz postgres baze na koordinatoru, a dobiva se nakon registracije
 //device_id je indentifikator periferije spojene na uređajs
-const char *pars = "main request parser";
 int parse_datagram(char *json, char *ID, char *network, int *network_type, char *interface, int *sourceID, int *targetID, char *body);
 int parse_datagram_body(char *json, int *request_type, int *device_type, int *logical_clock, int *device_id, char *data);
 int parse_sensor_datagram(char *json, int *measurement, char *unit);

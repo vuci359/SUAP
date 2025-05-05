@@ -58,6 +58,7 @@ esp_lcd_touch_handle_t tp = NULL;
 #endif
 
 extern void example_lvgl_demo_ui(lv_indev_t *encoder1, lv_indev_t *encoder2);
+int current_logical_clock = 0;
 
 
 void app_main(void)

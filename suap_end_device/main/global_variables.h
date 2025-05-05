@@ -75,4 +75,8 @@ extern int my_ID;
 extern int neighbour_count;
 extern end_device neighbours[100];
 
+extern int current_logical_clock;
+static const char *pars = "main request parser"; //nek si kompajler napravi zasebnu kopiju za svaku funkciju da me ne maltretira...
+
+
 #endif

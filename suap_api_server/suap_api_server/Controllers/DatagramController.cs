@@ -30,10 +30,11 @@ public class  DatagramController: ControllerBase
     [SwaggerResponse(Status404NotFound)]
     public IActionResult PushMessage([FromBody] MainDatagram json_data){
         try{
-         if(!_message_queue.ContainsKey(json_data.sourceID)){
+         if(!_message_queue.ContainsKey(json_data.targetID)){
             Queue<MainDatagram> queue = new Queue<MainDatagram>();
+            _message_queue.Add(json_data.targetID, queue);
          }
-            _message_queue[json_data.sourceID].Enqueue(json_data);
+            _message_queue[json_data.targetID].Enqueue(json_data);
             return Ok(json_data.ID);
         }catch(Exception e){
             Console.WriteLine(e.Message);
