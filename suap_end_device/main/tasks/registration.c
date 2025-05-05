@@ -37,6 +37,7 @@ int register_end_device(){
 
 
     int status = post_rest_function(podaci, odgovor, BASE_URL"/Registration", query);
+    printf("podaci %s \n", podaci);
 
     ESP_LOGI(predef_tasks, "GRES");
 
@@ -47,7 +48,7 @@ int register_end_device(){
 
         main_request = cJSON_Parse(podaci);
         if(main_request == NULL){
-            ESP_LOGE(predef_tasks, "JSON je NULL");
+            ESP_LOGE(predef_tasks, "pod JSON je NULL");
             return -1;
         }
         
@@ -80,7 +81,7 @@ int get_neighbours(){
     cJSON *pom, *subpom;
     cJSON *root = cJSON_Parse(podaci);
     if(root == NULL){
-        ESP_LOGE(predef_tasks, "JSON je NULL");
+        ESP_LOGE(predef_tasks, "root JSON je NULL");
         return -1;
     }
     int n = cJSON_GetArraySize(root);

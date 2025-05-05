@@ -26,11 +26,13 @@ public class DatagramBody{
         get;
         set;
     }
-    public string device_id {
+    public int device_id {
         get;
         set;
     }
-    public BodyData data{
+    
+   // [AllowNull]
+    public BodyData? data{
         get;
         set;
     }

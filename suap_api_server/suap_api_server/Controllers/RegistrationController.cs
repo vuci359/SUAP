@@ -9,6 +9,7 @@ using static Microsoft.AspNetCore.Http.StatusCodes;
 using suap_api_server.Models;
 using suap_api_server.Models.Data;
 using suap_api_server.Models.Devices;
+using System.Net;
 namespace suap_api_server.Controllers;
 
 [ApiController]
@@ -28,17 +29,20 @@ public class  RegistrationController: ControllerBase
     [HttpPost]
     [ActionName("Register")]
     [SwaggerResponse(Status200OK)]
+    [SwaggerResponse(Status201Created)]
     [SwaggerResponse(Status208AlreadyReported)]
     [SwaggerResponse(Status404NotFound)]
     public IActionResult Register([FromBody] EndDevice node){
         try{
             //var node = new EndDevice();
             if(_nodes.Exists(x => x.MAC == node.MAC)){ //preraditi da uspoređuje MAC adrese i ažurira po potrebi
-                return StatusCode(208); //ne podržava zamjenu IP adrese, moguće rješiti naknadno s provjerom MAC umjesto ID i vračanjem podataka uz kod 208
+              //  Console.WriteLine("vec postoji");
+               // Console.WriteLine(_nodes.FindLast(x => x.MAC == node.MAC).IP);
+                return Ok(_nodes.FindLast(x => x.MAC == node.MAC)); //nije idealno, trebalo bi nekak vratiti status 208
             }else{
                 node.ID = rnd.Next(100); //pretpostavlja se do 100 uređaja; //nije idealno,moguće ponavljanje
                 _nodes.Add(node);
-                return Ok(node);
+                return Ok(node); //trebal obi vratiti status 201
             }
         }catch(Exception e){
             Console.WriteLine(e.Message);

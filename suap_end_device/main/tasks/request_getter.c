@@ -33,9 +33,9 @@ int getMessageCount(int *message_count){
  //   printf("ccc");
     char pom[5] = ""; sprintf(pom, "%d", my_ID);
     strcat(URL, pom);
-    printf("%s\n", URL);
+//    printf("%s\n", URL);
     get_rest_function(podaci, odgovor, URL, NULL);
-    printf("eee%s", podaci);
+ //   printf("eee%s", podaci);
     *message_count = atoi(podaci);
 
     return 0;

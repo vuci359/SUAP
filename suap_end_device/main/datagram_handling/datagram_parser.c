@@ -1,31 +1,32 @@
 #include "datagram_handling.h"
 
-int parse_datagram(char *json, char *ID, char *network, int *network_type, char *interface, int *sourceID, int *targetID, char *body){
-    const cJSON *main_request = NULL;
+int parse_datagram(cJSON **json, char *ID, char *network, int *network_type, char *interface, int *sourceID, int *targetID, cJSON **body){
     cJSON *pom = NULL;
 
-    main_request = cJSON_Parse(json);
-    if(main_request == NULL){
+    //main_request = cJSON_Parse(json);
+    if(*json == NULL){
         ESP_LOGE(pars, "JSON je NULL");
         return -1;
     }
     
-        pom = cJSON_GetObjectItem(main_request, "ID");
+        pom = cJSON_GetObjectItem(*json, "ID");
         if (!cJSON_IsString(pom)){
            ESP_LOGE(pars, "ID nije string");
            return -2;
         }
-        *ID = pom->valuestring;
+        strcpy(ID, pom->valuestring);
+        //printf("%s %s\n", ID, pom->valuestring);
 
-        pom = cJSON_GetObjectItem(main_request, "network");
+
+        pom = cJSON_GetObjectItem(*json, "network");
         if (!cJSON_IsString(pom)){
             ESP_LOGE(pars, "ID mreže nije string");
             return -3;
         }
-        *network = pom->valuestring;
+        strcpy(network, pom->valuestring);
 
 
-        pom = cJSON_GetObjectItem(main_request, "network_type");
+        pom = cJSON_GetObjectItem(*json, "network_type");
         if (!cJSON_IsNumber(pom)){
             ESP_LOGE(pars, "Tip mreže nije broj");
             return -4;
@@ -33,60 +34,58 @@ int parse_datagram(char *json, char *ID, char *network, int *network_type, char 
         *network_type = pom->valueint;
 
 
-        pom = cJSON_GetObjectItem(main_request, "interface");
+        pom = cJSON_GetObjectItem(*json, "interface");
         if (!cJSON_IsString(pom)){
             ESP_LOGE(pars, "Mrežno sučelje nije string");
             return -5;
         }
-        *interface = pom->valuestring;
+        strcpy(interface, pom->valuestring);
 
-        pom = cJSON_GetObjectItem(main_request, "sourceID");
+        pom = cJSON_GetObjectItem(*json, "sourceID");
         if (!cJSON_IsNumber(pom)){
             ESP_LOGE(pars, "Indentifikator izvora nije broj");
             return -6;
         }
         *sourceID = pom->valueint;
 
-        pom = cJSON_GetObjectItem(main_request, "targetID");
+        pom = cJSON_GetObjectItem(*json, "targetID");
         if (!cJSON_IsNumber(pom)){
             ESP_LOGE(pars, "Indentifikator odredišta nije broj");
             return -6;
         }
         *targetID = pom->valueint;
 
-        pom = cJSON_GetObjectItem(main_request, "request_body");
-        if (!cJSON_IsString(pom)){
-            ESP_LOGE(pars, "Sadržaj zahtjeva nije string");
-            return -7;
-        }
-        *body = pom->valuestring;
+        *body = cJSON_GetObjectItem(*json, "body");
+      //  printf("%ld\n", (long int) cJSON_GetObjectItem(*json, "body"));
 
+    
+    if(pom != NULL) {
+        cJSON_Delete(pom);
+    }
 
-    cJSON_Delete(main_request);
-    cJSON_Delete(pom);
 
     return 0;
 }
 
 
-int parse_datagram_body(char *json, int *request_type, int *device_type, int *logical_clock, int *device_id, char *data){
-    const cJSON *main_request = NULL;
+int parse_datagram_body(cJSON **json, int *request_type, int *device_type, int *logical_clock, int *device_id, cJSON **data){
+//    cJSON *main_request = json;
     cJSON *pom = NULL;
 
-    main_request = cJSON_Parse(json);
-    if(main_request == NULL){
+    //main_request = cJSON_Parse(json);
+    if(*json == NULL){
         ESP_LOGE(pars, "JSON je NULL");
         return -1;
     }
-    
-        pom = cJSON_GetObjectItem(main_request, "request_type");
+        printf("%ld\n", (long int) *json);
+        pom = cJSON_GetObjectItem(*json, "request_type");
         if (!cJSON_IsNumber(pom)){
            ESP_LOGE(pars, "Vrsta zahtjeva nije broj");
            return -2;
         }
         *request_type = pom->valueint;
 
-        pom = cJSON_GetObjectItem(main_request, "device_type");
+        pom = cJSON_GetObjectItem(*json, "device_type");
         if (!cJSON_IsString(pom)){
             ESP_LOGE(pars, "ID mreže nije string");
             return -3;
@@ -94,7 +93,7 @@ int parse_datagram_body(char *json, int *request_type, int *device_type, int *lo
         *device_type = pom->valuestring;
 
 
-        pom = cJSON_GetObjectItem(main_request, "logical_clock");
+        pom = cJSON_GetObjectItem(*json, "logical_clock");
         if (!cJSON_IsNumber(pom)){
             ESP_LOGE(pars, "Logički sats nije broj");
             return -4;
@@ -102,32 +101,26 @@ int parse_datagram_body(char *json, int *request_type, int *device_type, int *lo
         *logical_clock = pom->valueint;
 
 
-        pom = cJSON_GetObjectItem(main_request, "device_id");
+        pom = cJSON_GetObjectItem(*json, "device_id");
         if (!cJSON_IsNumber(pom)){
             ESP_LOGE(pars, "ID periferije nije broj");
             return -5;
         }
         *device_id = pom->valuestring;
 
-        pom = cJSON_GetObjectItem(main_request, "data");
-        if (!cJSON_IsString(pom)){
-            ESP_LOGE(pars, "Podaci nisu string");
-            return -6;
-        }
-        *data = pom->valueint;
+        *data = cJSON_GetObjectItem(*json, "data");
 
 
-    cJSON_Delete(main_request);
     cJSON_Delete(pom);
 
     return 0;
 }
 
-int parse_sensor_datagram(char *json, int* measurement, char* unit){
-    const cJSON *main_request = NULL;
+int parse_sensor_datagram(cJSON *json, int* measurement, char* unit){
+    const cJSON *main_request = json;
     cJSON *pom = NULL;
 
-    main_request = cJSON_Parse(json);
+   //main_request = cJSON_Parse(json);
     if(main_request == NULL){
         ESP_LOGE(pars, "JSON je NULL");
         return -1;
@@ -146,14 +139,14 @@ int parse_sensor_datagram(char *json, int* measurement, char* unit){
             return -3;
         }
         *unit = pom->valueint;
-    cJSON_Delete(main_request);
-    return -1;
+        cJSON_Delete(pom);
+    return 0;
 }
-int parse_actuator_datagram(char *json, int *old_state, int *new_state){
-    const cJSON *main_request = NULL;
+int parse_actuator_datagram(cJSON *json, int *old_state, int *new_state){
+    const cJSON *main_request = json;
     cJSON *pom = NULL;
 
-    main_request = cJSON_Parse(json);
+    //main_request = cJSON_Parse(json);
     if(main_request == NULL){
         ESP_LOGE(pars, "Novo stanje je NULL!!!");
         return -1;
@@ -173,17 +166,16 @@ int parse_actuator_datagram(char *json, int *old_state, int *new_state){
         }
     *new_state = pom->valuestring;
     
-    cJSON_Delete(main_request);
     cJSON_Delete(pom);
 
     return 0;
 }
 
-int parse_user_datagram(char *json, char *message, bool *input_required, int *user_input){
-    const cJSON *main_request = NULL;
+int parse_user_datagram(cJSON *json, char *message, bool *input_required, int *user_input){
+    const cJSON *main_request = json;
     cJSON *pom = NULL;
 
-    main_request = cJSON_Parse(json);
+    //main_request = cJSON_Parse(json);
     if(main_request == NULL){
         ESP_LOGE(pars, "Novo stanje je NULL!!!");
         return -1;
@@ -213,7 +205,6 @@ int parse_user_datagram(char *json, char *message, bool *input_required, int *us
         *user_input = NULL;
     }
    
-    cJSON_Delete(main_request);
     cJSON_Delete(pom);
 
     return 0;

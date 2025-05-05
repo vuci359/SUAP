@@ -30,11 +30,11 @@
 
 //target_id se vadi iz postgres baze na koordinatoru, a dobiva se nakon registracije
 //device_id je indentifikator periferije spojene na uređajs
-int parse_datagram(char *json, char *ID, char *network, int *network_type, char *interface, int *sourceID, int *targetID, char *body);
-int parse_datagram_body(char *json, int *request_type, int *device_type, int *logical_clock, int *device_id, char *data);
-int parse_sensor_datagram(char *json, int *measurement, char *unit);
-int parse_actuator_datagram(char *json, int *old_state,int *new_state);
-int parse_user_datagram(char *json, char *message, bool *input_required, int *user_input);
+int parse_datagram(cJSON **json, char *ID, char *network, int *network_type, char *interface, int *sourceID, int *targetID, cJSON **body);
+int parse_datagram_body(cJSON **json, int *request_type, int *device_type, int *logical_clock, int *device_id, cJSON **data);
+int parse_sensor_datagram(cJSON *json, int *measurement, char *unit);
+int parse_actuator_datagram(cJSON *json, int *old_state,int *new_state);
+int parse_user_datagram(cJSON *json, char *message, bool *input_required, int *user_input);
 
 //generator
 char* generate_datagram(char *ID, char *network, int *network_type, char *interface, int *sourceD, int *targetID, char *body);

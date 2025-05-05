@@ -14,10 +14,10 @@ int parse_request(char *request){
     char *reply;
     char ID[10], network[10], interface[10];
     int network_type, targetID, sourceID;
-    char body[REQUEST_BODY_SIZE];
+    cJSON *body = NULL;
 
     int request_type, device_type, logical_clock, device_id;
-    char data[REQUEST_DATA_SIZE];
+    cJSON *data = NULL;
     int measurement;
     char unit[10] = "";
     int old_state, new_state;
@@ -26,10 +26,28 @@ int parse_request(char *request){
     int answer;
     char pod[1000], odg[25];
 
-    err = parse_datagram(request, ID, network, &network_type, interface, &sourceID, &targetID, body);
+    cJSON *main_request = cJSON_Parse(request);
+    if(main_request == NULL){
+        ESP_LOGE(pars, "JSON je NULL");
+        return -1;
+    }
 
-    err = parse_datagram_body(body, &request_type, &device_type, &logical_clock, &device_id, data);
+    err = parse_datagram(&main_request, ID, network, &network_type, interface, &sourceID, &targetID, &body);
+  //  printf("%ld\n", (long int) body);
+    printf("error %d\n", err);
+
+    if(err != 0){
+        return err;
+    }
+
+    err = parse_datagram_body(&body, &request_type, &device_type, &logical_clock, &device_id, &data);
     update_logical_clock(&logical_clock);
+    printf("error %d\n", err);
+
+
+    if(err != 0){
+        return err;
+    }
 
 //tu razbiti na metode za trančirati request i reply
 
@@ -69,6 +87,10 @@ int parse_request(char *request){
     }
 
     post_rest_function(pod, odg, API_POST_URL, reply);
+
+    if(main_request != NULL){
+        cJSON_Delete(main_request);
+    }
 
     return err;
 
