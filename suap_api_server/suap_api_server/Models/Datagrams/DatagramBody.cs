@@ -20,10 +20,10 @@ public class DatagramBody{
         set;
     }
 
-	public int device_type{ //tip periferije
-        get;
-        set;
-    }
+//	public int device_type{ //tip periferije //netreba jer je u bodyju zbog dskriminacije za deserijalizaciju
+//        get;
+//       set;
+ //   }
     public int logical_clock{ //tip mreže
         get;
         set;
