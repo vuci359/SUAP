@@ -38,7 +38,7 @@ int parse_user_datagram(cJSON **json, char *message, bool *input_required, int *
 
 //generator
 const char* generate_datagram(char *body, char *ID, char *network, int *network_type, char *interface, int *sourceID, int *targetID);
-const char* generate_datagram_body(char *data, int request_type, int device_type, int *logical_clock, int *device_id);
+const char* generate_datagram_body(char *data, int request_type, int *logical_clock, int *device_id);
 const char* generate_sensor_datagram(int *measurement, char* unit);
 const char* generate_actuator_datagram(int *oldstate, int *new_state);
 const char* generate_user_datagram(char *message, bool *input_required, int *userinput);

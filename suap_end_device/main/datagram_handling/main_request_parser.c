@@ -98,10 +98,10 @@ int parse_request(char *request){
      //  }
        //stvaranje odgovora
        strcpy(reply, "");
-       char *dta = generate_sensor_datagram(&measurement, unit);
+       char *dta = generate_sensor_datagram(&measurement, unit); //IOT_SENSOR
      //  printf("ttt %s bbb\n",dta);
 
-       char *bdy = generate_datagram_body(dta, REPLY, IOT_SENZOR, &current_logical_clock, &device_id);
+       char *bdy = generate_datagram_body(dta, REPLY, &current_logical_clock, &device_id);
      //  printf("ttt %s bbb\n",bdy);
 
        strcpy(reply, generate_datagram(bdy, ID, network, &network_type, interface, &targetID, &sourceID));
@@ -138,8 +138,8 @@ int parse_request(char *request){
             }
             return err; //kasnije složiti slanje greške...
            }
-           char *dta = generate_sensor_datagram(&measurement, unit);
-           char *bdy = generate_datagram_body(dta, REPLY, ACTUATOR, &current_logical_clock, &device_id);
+           char *dta = generate_actuator_datagram(&old_state, &new_state); //ACTUATOR
+           char *bdy = generate_datagram_body(dta, REPLY, &current_logical_clock, &device_id);
            strcpy(reply, generate_datagram(bdy, ID, network, &network_type, interface, &targetID, &sourceID));
          //  free(dta);
           // free(bdy);
@@ -173,8 +173,8 @@ int parse_request(char *request){
            }
            strcpy(reply, "");
 
-           char *dta = generate_sensor_datagram(&measurement, unit);
-           char *bdy = generate_datagram_body(dta, REPLY, USER, &current_logical_clock, &device_id);
+           char *dta = generate_user_datagram(&message, &input_required, &answer); //USER
+           char *bdy = generate_datagram_body(dta, REPLY, &current_logical_clock, &device_id);
            strcpy(reply, generate_datagram(bdy, ID, network, &network_type, interface, &targetID, &sourceID));
           // free(dta);
           // free(bdy);

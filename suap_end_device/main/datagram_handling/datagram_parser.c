@@ -111,7 +111,17 @@ int parse_datagram_body(cJSON **json, int *request_type, int *device_type, int *
             ESP_LOGE(pars, "ID periferije nije broj");
             return -5;
         }
-        *device_id = pom->valuestring;
+        *device_id = pom->valueint;
+        pom = cJSON_GetObjectItem(*json, "body");
+
+        cJSON *pom2 = cJSON_GetObjectItem(*json, "device_id");
+        if (!cJSON_IsNumber(pom2)){
+            ESP_LOGE(pars, "TIP periferije nije broj");
+            return -6;
+        }
+        *device_type = pom->valueint;
+
+
 
       //  *data = cJSON_GetObjectItem(*json, "data");
 

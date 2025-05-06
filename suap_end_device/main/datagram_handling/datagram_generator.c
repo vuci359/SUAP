@@ -26,7 +26,7 @@ const char* generate_datagram(char *body, char *ID, char *network, int *network_
     return jsona;
 }
 
-const char* generate_datagram_body(char *data, int request_type, int device_type, int *logical_clock, int *device_id){
+const char* generate_datagram_body(char *data, int request_type, int *logical_clock, int *device_id){
     static char jsonb[REQUEST_BODY_SIZE*2] = "";
     strcpy(jsonb, "");
 
@@ -36,8 +36,8 @@ const char* generate_datagram_body(char *data, int request_type, int device_type
 
        //char *pom = "5555";
         strcat(jsonb, "\"request_type\":");strcat(jsonb, pom);
-        sprintf(pom, "%d", device_type);
-        strcat(jsonb, ",\"device_type\":"); strcat(jsonb, pom);
+     //   sprintf(pom, "%d", device_type);
+      //  strcat(jsonb, ",\"device_type\":"); strcat(jsonb, pom);
         sprintf(pom, "%d", *logical_clock);
         strcat(jsonb, ",\"logical_clock\":"); strcat(jsonb, pom);
         sprintf(pom, "%d", *device_id);
@@ -56,7 +56,7 @@ const char* generate_sensor_datagram(int *measurement, char *unit){
     static char json[REQUEST_BODY_SIZE] = "";
     //printf("prob... %s", json);
 
-    strcat(json, "{");
+    strcat(json, "{\"$type\":0, ");
         if(measurement == NULL){
             strcat(json, "\"measurement\":"); strcat(json, "null");
             //printf("probaa... %s", json);
@@ -84,8 +84,8 @@ const char* generate_sensor_datagram(int *measurement, char *unit){
 
 const char* generate_actuator_datagram(int *old_state, int *new_state){
     static char json[REQUEST_BODY_SIZE] = "";
-    strcat(json, "{");
-        if(old_state == NULL){
+    strcat(json, "{\"$type\":1, ");
+    if(old_state == NULL){
             strcat(json, "\"old_state\":");strcat(json, "null");
         } else {
             strcat(json, "\"old_state\":");strcat(json, old_state);
@@ -100,8 +100,8 @@ const char* generate_actuator_datagram(int *old_state, int *new_state){
 
 const char* generate_user_datagram(char *message, bool *input_required, int *user_input){
     static char json[REQUEST_BODY_SIZE] = "";
-    strcat(json, "{");
-        strcat(json, "\"message\":");strcat(json, message);
+    strcat(json, "{\"$type\":2, ");
+    strcat(json, "\"message\":");strcat(json, message);
         if(*input_required){
             strcat(json, "\"input_required\":"); strcat(json, "true");
         }else if(!*input_required){
