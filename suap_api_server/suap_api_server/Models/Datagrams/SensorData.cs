@@ -16,7 +16,7 @@ public class SensorData: BodyData{
         
     }
 
-    public override DatagramDataType type => DatagramDataType.Sensor;
+    //public override DatagramDataType type => DatagramDataType.Sensor;
 
     public int measurement{
         get;

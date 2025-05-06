@@ -15,7 +15,7 @@ public class UserData: BodyData{
 	public UserData(){
         
     }
-    public override DatagramDataType type => DatagramDataType.User;
+   // public override DatagramDataType type => DatagramDataType.User;
 
 
     public string message{

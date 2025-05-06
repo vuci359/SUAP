@@ -12,21 +12,21 @@ using Microsoft.Identity.Client;
 namespace suap_api_server.Models.Datagrams;
 
 [JsonPolymorphic(TypeDiscriminatorPropertyName = "type")]
-[JsonDerivedType(typeof(SensorData), nameof(DatagramDataType.Sensor))]
-[JsonDerivedType(typeof(UserData), nameof(DatagramDataType.User))]
-[JsonDerivedType(typeof(ActuatorData), nameof(DatagramDataType.Actuator))]
+[JsonDerivedType(typeof(SensorData), 0)]
+[JsonDerivedType(typeof(UserData), 2)]
+[JsonDerivedType(typeof(ActuatorData), 1)]
 //[JsonDerivedType(typeof(SensorData))]
 //[JsonDerivedType(typeof(UserData))]
 //[JsonDerivedType(typeof(ActuatorData))]
 public abstract class BodyData{
 
-   public enum DatagramDataType {
-        Sensor,
-        Actuator,
-        User
-    };
+ //  public enum DatagramDataType {
+ //       Sensor,
+ //       Actuator,
+ //       User
+ //   };
 	
-    [JsonConverter(typeof(JsonStringEnumConverter))]
-    public abstract DatagramDataType type { get; }
+ //   [JsonConverter(typeof(JsonStringEnumConverter))]
+  //  public abstract DatagramDataType type { get; }
 
 }

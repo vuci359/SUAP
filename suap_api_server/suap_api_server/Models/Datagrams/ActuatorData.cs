@@ -15,7 +15,7 @@ public class ActuatorData: BodyData{
 	public ActuatorData(){
         
     }
-    public override DatagramDataType type => DatagramDataType.Actuator;
+ //   public override DatagramDataType type => DatagramDataType.Actuator;
 
     public int old_state{
         get;
