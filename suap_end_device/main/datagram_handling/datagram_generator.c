@@ -3,8 +3,8 @@
 
 const char* generate_datagram(char *body, char *ID, char *network, int *network_type, char *interface, int *sourceID, int *targetID){
     static char jsona[REQUEST_STRING_SIZE*3] = "";
-    strcpy(jsona, "");
-    strcat(jsona, "{");
+  //  strcpy(jsona, "");
+    strcpy(jsona, "{");
     char pom[5];
 
         strcat(jsona, "\"ID\":\"");strcat(jsona, ID);
@@ -28,9 +28,9 @@ const char* generate_datagram(char *body, char *ID, char *network, int *network_
 
 const char* generate_datagram_body(char *data, int request_type, int *logical_clock, int *device_id){
     static char jsonb[REQUEST_BODY_SIZE*2] = "";
-    strcpy(jsonb, "");
+  //  strcpy(jsonb, "");
 
-    strcat(jsonb, "{");
+    strcpy(jsonb, "{");
         char pom[10];
         sprintf(pom, "%d", request_type);
 
@@ -56,7 +56,7 @@ const char* generate_sensor_datagram(int *measurement, char *unit){
     static char json[REQUEST_BODY_SIZE] = "";
     //printf("prob... %s", json);
 
-    strcat(json, "{\"$type\":0, ");
+    strcpy(json, "{\"type\":0, ");
         if(measurement == NULL){
             strcat(json, "\"measurement\":"); strcat(json, "null");
             //printf("probaa... %s", json);
@@ -84,7 +84,7 @@ const char* generate_sensor_datagram(int *measurement, char *unit){
 
 const char* generate_actuator_datagram(int *old_state, int *new_state){
     static char json[REQUEST_BODY_SIZE] = "";
-    strcat(json, "{\"$type\":1, ");
+    strcpy(json, "{\"type\":1, ");
     if(old_state == NULL){
             strcat(json, "\"old_state\":");strcat(json, "null");
         } else {
@@ -100,7 +100,7 @@ const char* generate_actuator_datagram(int *old_state, int *new_state){
 
 const char* generate_user_datagram(char *message, bool *input_required, int *user_input){
     static char json[REQUEST_BODY_SIZE] = "";
-    strcat(json, "{\"$type\":2, ");
+    strcpy(json, "{\"type\":2, ");
     strcat(json, "\"message\":");strcat(json, message);
         if(*input_required){
             strcat(json, "\"input_required\":"); strcat(json, "true");

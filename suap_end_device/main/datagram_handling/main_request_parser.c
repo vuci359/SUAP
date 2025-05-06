@@ -16,7 +16,7 @@ int parse_request(char *request){
     int network_type, targetID, sourceID;
     const cJSON *body = NULL;
 
-    int request_type, device_type, logical_clock, device_id;
+    int request_type, device_type = -1, logical_clock, device_id;
     const cJSON *data = NULL;
     int measurement;
     char unit[10] = "";
@@ -31,38 +31,37 @@ int parse_request(char *request){
         ESP_LOGE(pars, "JSON je NULL");
         return -1;
     }
+    body = cJSON_GetObjectItem(main_request, "body");
+
+    data = cJSON_GetObjectItem(body, "data");
+
+    cJSON *pom = cJSON_GetObjectItem(data, "type");
+        if (!cJSON_IsNumber(pom)){
+            ESP_LOGE(pars, "Tip periferije nije broj");
+            err = -2;
+        }
+        else device_type = pom->valueint;
 
     err = parse_datagram(&main_request, ID, network, &network_type, interface, &sourceID, &targetID);
 
  //   printf("%ld\n", (long int) body);
  //   cJSON *pom = cJSON_GetObjectItem(body, "device_id");
-    printf("%s\n", ID);
+ //   printf("%s\n", ID);
 
-    printf("error %d\n", err);
+  //  printf("error %d\n", err);
 
-    if(err != 0){
-        if(main_request != NULL){
+  //  if(err != 0){
+   //     if(main_request != NULL){
          //   cJSON_Delete(main_request);
-            main_request = NULL;
-        }
-        return err;
-    }
- //   if(main_request != NULL) {
-  //      cJSON_Delete(main_request);
+     //       main_request = NULL;
+      //  }
+     //   return err;
  //   }
 
-    main_request = cJSON_Parse(request); //trikovi zaneznam kaj...
-    body = cJSON_GetObjectItem(main_request, "body");
-
-    if(main_request == NULL){
-        ESP_LOGE(pars, "JSONn je NULL");
-        return -1;
-    }
-
 //
-    err = parse_datagram_body(&body, &request_type, &device_type, &logical_clock, &device_id);
+    err = parse_datagram_body(&body, &request_type, &logical_clock, &device_id);
     update_logical_clock(&logical_clock);
-    printf("error %d\n", request_type);
+   // printf("error %d\n", request_type);
    // err=1;
 
     if(err != 0){
@@ -186,8 +185,8 @@ int parse_request(char *request){
         return -1;
     }
 
-    post_rest_function(pod, odg, API_POST_URL, reply);
 
+    post_rest_function(pod, odg, BASE_URL"/Datagram/PushMessage/", reply);
     if(main_request != NULL){
         //cJSON_Delete(main_request);
         main_request = NULL;

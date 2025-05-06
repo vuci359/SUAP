@@ -55,26 +55,26 @@ int parse_datagram(cJSON **json, char *ID, char *network, int *network_type, cha
         }
         *targetID = pom->valueint;
 
-       // pom = cJSON_GetObjectItem(*json, "body");
+      //  *body = cJSON_GetObjectItem(*json, "body")
 
-        //body = pom;
-      //  memcpy(*body, pom, sizeof (*pom)); /* copy contents of b0 into b1 */
+       // *body = pom;
+    //  memcpy(*body, pom, sizeof (*pom)); /* copy contents of b0 into b1 */
       //  printf("%ld\n", (long int) cJSON_GetObjectItem(*json, "body"));
 
     
  //   if(pom != NULL) {
- //       cJSON_Delete(pom);
+   //     cJSON_Delete(pom);
+    //}
+ //   if(*json != NULL) {
+  //      cJSON_Delete(*json);
+  //      *json = NULL;
   //  }
-    if(*json != NULL) {
-        cJSON_Delete(*json);
-        *json = NULL;
-    }
 
     return 0;
 }
 
 
-int parse_datagram_body(cJSON **json, int *request_type, int *device_type, int *logical_clock, int *device_id){
+int parse_datagram_body(cJSON **json, int *request_type, int *logical_clock, int *device_id){
 //    cJSON *main_request = json;
     cJSON *pom = NULL;
 
@@ -91,11 +91,11 @@ int parse_datagram_body(cJSON **json, int *request_type, int *device_type, int *
         }
         *request_type = pom->valueint;
 
-        pom = cJSON_GetObjectItem(*json, "device_type");
-        if (!cJSON_IsNumber(pom)){
-            ESP_LOGE(pars, "Tip periferije nije broj");
-        }
-        *device_type = pom->valueint;
+    //   pom = cJSON_GetObjectItem(*json, "device_type");
+    //    if (!cJSON_IsNumber(pom)){
+     //       ESP_LOGE(pars, "Tip periferije nije broj");
+     //   }
+     //   *device_type = pom->valueint;
 
 
         pom = cJSON_GetObjectItem(*json, "logical_clock");
@@ -112,21 +112,7 @@ int parse_datagram_body(cJSON **json, int *request_type, int *device_type, int *
             return -5;
         }
         *device_id = pom->valueint;
-        pom = cJSON_GetObjectItem(*json, "body");
 
-        cJSON *pom2 = cJSON_GetObjectItem(*json, "device_id");
-        if (!cJSON_IsNumber(pom2)){
-            ESP_LOGE(pars, "TIP periferije nije broj");
-            return -6;
-        }
-        *device_type = pom->valueint;
-
-
-
-      //  *data = cJSON_GetObjectItem(*json, "data");
-
-
-    cJSON_Delete(pom);
 
     return 0;
 }
