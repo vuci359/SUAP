@@ -3,7 +3,9 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Identity.Client;
-using Newtonsoft.Json;
+//using Newtonsoft.Json;
+using System.Text.Json;
+
 
 
 namespace suap_api_server.Models.Datagrams;
@@ -13,12 +15,12 @@ public class DatagramBody{
 
     }
 
-	public int request_type{ //ID poruke
+	public int request_type{ //tip poruke
         get;
         set;
     }
 
-	public int device_type{ //ID mreže
+	public int device_type{ //tip periferije
         get;
         set;
     }
@@ -32,6 +34,7 @@ public class DatagramBody{
     }
     
    // [AllowNull]
+
     public BodyData? data{
         get;
         set;

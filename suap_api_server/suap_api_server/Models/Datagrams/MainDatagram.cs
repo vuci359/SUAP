@@ -2,9 +2,11 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
+using System.Text.Json;
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Identity.Client;
-using Newtonsoft.Json;
+//using Newtonsoft.Json;
 
 
 namespace suap_api_server.Models.Datagrams;

@@ -9,6 +9,8 @@ using suap_api_server.Models;
 using suap_api_server.Models.Data;
 using suap_api_server.Models.Devices;
 using suap_api_server.Models.Datagrams;
+//using suap_api_server.Converters;
+
 namespace suap_api_server.Controllers;
 
 [ApiController]
@@ -18,11 +20,13 @@ namespace suap_api_server.Controllers;
 public class  DatagramController: ControllerBase
 {
     private static Dictionary<int,Queue<MainDatagram>> _message_queue = new Dictionary<int,Queue<MainDatagram>>(); //static jer se kontroleri stvaraju odvojeno za svaki poziv
+    
 
     public DatagramController()
     {
      //  _data = new RecentData(0,0,0);
     }
+
     [HttpPost]
     [ActionName("PushMessage")]
     [Route("PushMessage")]

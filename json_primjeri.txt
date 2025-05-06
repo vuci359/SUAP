@@ -1,0 +1,5 @@
+ttt {"ID":"ccc","network":"string","network_type":5,"interface":"string","sourceID":96,"targetID":49,"body":{"request_type":1,"device_type":0,"logical_clock":5,"device_id":0,"data":{"measurement":-58,"unit":"dBi"}{"measurement":-59,"unit":"dBi"}{"measurement":-59,"unit":"dBi"}{"measurement":-58,"unit":"dBi"}{"measurement":-59,"unit":"dBi"}}} bbb
+
+
+
+{"id":"ccc","network":"string","network_type":5,"interface":"string","sourceID":49,"targetID":96,"body":{"request_type":0,"device_type":0,"logical_clock":0,"device_id":0,"data":null}}
