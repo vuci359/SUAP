@@ -11,13 +11,13 @@ void update_logical_clock(int *logical_clock){
 int parse_request(char *request){
     int err=0;
 
-    char *reply;
+    char reply[1000];
     char ID[10], network[10], interface[10];
     int network_type, targetID, sourceID;
-    cJSON *body = NULL;
+    const cJSON *body = NULL;
 
     int request_type, device_type, logical_clock, device_id;
-    cJSON *data = NULL;
+    const cJSON *data = NULL;
     int measurement;
     char unit[10] = "";
     int old_state, new_state;
@@ -26,28 +26,53 @@ int parse_request(char *request){
     int answer;
     char pod[1000], odg[25];
 
-    cJSON *main_request = cJSON_Parse(request);
+    const cJSON *main_request = cJSON_Parse(request);
     if(main_request == NULL){
         ESP_LOGE(pars, "JSON je NULL");
         return -1;
     }
 
-    err = parse_datagram(&main_request, ID, network, &network_type, interface, &sourceID, &targetID, &body);
-  //  printf("%ld\n", (long int) body);
+    err = parse_datagram(&main_request, ID, network, &network_type, interface, &sourceID, &targetID);
+
+ //   printf("%ld\n", (long int) body);
+ //   cJSON *pom = cJSON_GetObjectItem(body, "device_id");
+    printf("%s\n", ID);
+
     printf("error %d\n", err);
 
     if(err != 0){
+        if(main_request != NULL){
+         //   cJSON_Delete(main_request);
+            main_request = NULL;
+        }
         return err;
     }
+ //   if(main_request != NULL) {
+  //      cJSON_Delete(main_request);
+ //   }
 
-    err = parse_datagram_body(&body, &request_type, &device_type, &logical_clock, &device_id, &data);
+    main_request = cJSON_Parse(request); //trikovi zaneznam kaj...
+    body = cJSON_GetObjectItem(main_request, "body");
+
+    if(main_request == NULL){
+        ESP_LOGE(pars, "JSONn je NULL");
+        return -1;
+    }
+
+//
+    err = parse_datagram_body(&body, &request_type, &device_type, &logical_clock, &device_id);
     update_logical_clock(&logical_clock);
-    printf("error %d\n", err);
-
+    printf("error %d\n", request_type);
+   // err=1;
 
     if(err != 0){
+        if(main_request != NULL){
+            cJSON_Delete(main_request);
+            main_request = NULL;
+        }
         return err;
     }
+
 
 //tu razbiti na metode za trančirati request i reply
 
@@ -55,41 +80,117 @@ int parse_request(char *request){
        // err = parse_sensor_datagram(data, &measurement, unit); //treba mi za reply
        // err = display_sensor_data_to_user(sourceID, device_id, measurement, unit); //za prekapati reply
        err = read_data_from_sensor(&device_id, &measurement, unit);
+       if(err != 0){
+        if(main_request != NULL){
+            cJSON_Delete(main_request);
+            main_request = NULL;
+        }
+        return err; //kasnije složiti slanje greške...
+       }
+    //   printf("%d %s\n", measurement, unit);
+
+   // char* fff = generate_sensor_datagram(&measurement, unit);
+    //   if(fff == NULL){
+    //    printf("NULL pointer!!!!!!");
+    //   }
+    //   else{
+     //   printf("%s\n", fff);
+     //  }
        //stvaranje odgovora
-       reply = generate_datagram(ID, network, &network_type, interface, &sourceID, &targetID,
-                                    generate_datagram_body(REPLY, IOT_SENZOR, &current_logical_clock, &device_id,
-                                        generate_sensor_datagram(&measurement, unit)));
-        ESP_LOGI(pars, "%s", odg);
+       strcpy(reply, "");
+       char *dta = generate_sensor_datagram(&measurement, unit);
+     //  printf("ttt %s bbb\n",dta);
+
+       char *bdy = generate_datagram_body(dta, REPLY, IOT_SENZOR, &current_logical_clock, &device_id);
+     //  printf("ttt %s bbb\n",bdy);
+
+       strcpy(reply, generate_datagram(bdy, ID, network, &network_type, interface, &targetID, &sourceID));
+       //free(dta);
+       //free(bdy);
+
+        printf("ttt %s bbb\n",reply);
+       // ESP_LOGI(pars, "%s", odg);
 
 
     }else if(device_type == ACTUATOR){
-        err = parse_actuator_datagram(data, &old_state, &new_state);
+        data = cJSON_GetObjectItem(body, "data");
+        err = parse_actuator_datagram(&data, &old_state, &new_state);
+        if(err != 0){
+            if(main_request != NULL){
+                cJSON_Delete(main_request);
+                main_request = NULL;
+            }
+            return err; //kasnije složiti slanje greške...
+           }
         err = get_actuator_state(&device_id, &old_state);
+        if(err != 0){
+            if(main_request != NULL){
+                cJSON_Delete(main_request);
+                main_request = NULL;
+            }
+            return err; //kasnije složiti slanje greške...
+           }
         err = set_actuator_state(&device_id, &new_state);
-        reply = generate_datagram(ID, network, &network_type, interface, &sourceID, &targetID,
-                                    generate_datagram_body(REPLY, IOT_SENZOR, &current_logical_clock, &device_id,
-                                        generate_actuator_datagram(&old_state, &new_state)));
+        if(err != 0){
+            if(main_request != NULL){
+                cJSON_Delete(main_request);
+                main_request = NULL;
+            }
+            return err; //kasnije složiti slanje greške...
+           }
+           char *dta = generate_sensor_datagram(&measurement, unit);
+           char *bdy = generate_datagram_body(dta, REPLY, ACTUATOR, &current_logical_clock, &device_id);
+           strcpy(reply, generate_datagram(bdy, ID, network, &network_type, interface, &targetID, &sourceID));
+         //  free(dta);
+          // free(bdy);
 
 
     }else if(device_type == USER){
-        err = parse_user_datagram(data, message, &input_required, &answer); //problem: povezivanje s GUI?
+        data = cJSON_GetObjectItem(body, "data");
+        err = parse_user_datagram(&data, message, &input_required, &answer); //problem: povezivanje s GUI?
+        if(err != 0){
+            if(main_request != NULL){
+                cJSON_Delete(main_request);
+                main_request = NULL;
+            }
+            return err; //kasnije složiti slanje greške...
+           }
         err = display_message_to_user(message, &input_required, &answer);
+        if(err != 0){
+            if(main_request != NULL){
+                cJSON_Delete(main_request);
+                main_request = NULL;
+            }
+            return err; //kasnije složiti slanje greške...
+           }
         err = generate_user_datagram(NULL, &input_required, &answer);
-        reply = generate_datagram(ID, network, &network_type, interface, &sourceID, &targetID,
-                                    generate_datagram_body(REPLY, IOT_SENZOR, &current_logical_clock, &device_id,
-                                        generate_user_datagram(NULL, &input_required, &answer)));
+        if(err != 0){
+            if(main_request != NULL){
+                cJSON_Delete(main_request);
+                main_request = NULL;
+            }
+            return err; //kasnije složiti slanje greške...
+           }
+           strcpy(reply, "");
+
+           char *dta = generate_sensor_datagram(&measurement, unit);
+           char *bdy = generate_datagram_body(dta, REPLY, USER, &current_logical_clock, &device_id);
+           strcpy(reply, generate_datagram(bdy, ID, network, &network_type, interface, &targetID, &sourceID));
+          // free(dta);
+          // free(bdy);
                                     
 
     }else{
         ESP_LOGE(pars, "Invalid device type");
-        reply = "";
+        strcpy(reply, "");
         return -1;
     }
 
     post_rest_function(pod, odg, API_POST_URL, reply);
 
     if(main_request != NULL){
-        cJSON_Delete(main_request);
+        //cJSON_Delete(main_request);
+        main_request = NULL;
     }
 
     return err;
@@ -97,10 +198,10 @@ int parse_request(char *request){
 }
 
 int read_data_from_sensor(int *sensor_id, int *value, char *unit){
-    if(sensor_id == WLAN0){
+    if(*sensor_id == WLAN0){
         wifi_ap_record_t wifidata;
         if (esp_wifi_sta_get_ap_info(&wifidata)==0){
-        printf("rssi:%d\r\n", wifidata.rssi);
+        printf("rssi: %d\r\n", wifidata.rssi);
         *value = wifidata.rssi;
         strcat(unit, "dBi");
         }
@@ -110,7 +211,7 @@ int read_data_from_sensor(int *sensor_id, int *value, char *unit){
         }
     } else{
         unit = NULL;
-        ESP_LOGE(pars, "Specified sensor does not exist on current device");
+        ESP_LOGE(pars, "Specified sensor does not exist on current device %d", *sensor_id);
         return -2;
     }
     return 0;

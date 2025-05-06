@@ -151,6 +151,6 @@ void find_neighbours(){
     while(1){
         int rez = get_neighbours();
         ESP_LOGI(predef_tasks, "Susjedi %d", rez);
-        vTaskDelay(5000/portTICK_PERIOD_MS);
+        vTaskDelay(15000/portTICK_PERIOD_MS);
     }
 }
