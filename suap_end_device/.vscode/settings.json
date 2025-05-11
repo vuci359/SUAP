@@ -49,6 +49,7 @@
         "esp_lcd_panel_io.h": "c",
         "esp_mac.h": "c",
         "global_variables.h": "c",
-        "tasks.h": "c"
+        "tasks.h": "c",
+        "lv_img.h": "c"
     }
 }

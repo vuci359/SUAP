@@ -155,17 +155,17 @@ int parse_actuator_datagram(cJSON **json, int *old_state, int *new_state){
 
     pom = cJSON_GetObjectItem(*json, "old_state");
         if (!cJSON_IsNumber(pom)){
-           ESP_LOGE(pars, "Novo stanje nije broj");
+           ESP_LOGE(pars, "Staro stanje nije broj");
            return -2;
         }
-    *old_state = pom->valuestring;
+    *old_state = pom->valueint;
 
     pom = cJSON_GetObjectItem(*json, "new_state");
         if (!cJSON_IsNumber(pom)){
            ESP_LOGE(pars, "Novo stanje nije broj");
-           return -2;
+           return -3;
         }
-    *new_state = pom->valuestring;
+    *new_state = pom->valueint;
     
     cJSON_Delete(pom);
 
@@ -186,7 +186,7 @@ int parse_user_datagram(cJSON **json, char *message, bool *input_required, int *
            ESP_LOGE(pars, "poruka nije string");
            return -2;
         }
-    *message = pom->valuestring;
+    strcpy(message, pom->valuestring);
     pom = cJSON_GetObjectItem(*json, "input_required");
     if (cJSON_IsTrue(pom)) {
         *input_required = true;
@@ -198,7 +198,7 @@ int parse_user_datagram(cJSON **json, char *message, bool *input_required, int *
     }
     pom = cJSON_GetObjectItem(*json, "user_input");
         if (!cJSON_IsNumber(pom) && !cJSON_IsNull(pom)){
-           ESP_LOGE(pars, "poruka nije string");
+           ESP_LOGE(pars, "ulaz nije broj");
            return -2;
         }
     *user_input = pom->valueint;

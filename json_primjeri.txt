@@ -29,3 +29,46 @@ ttt {"ID":"ccc","network":"string","network_type":5,"interface":"string","source
     }
   }
 }
+
+{"id":"string","network":"string","network_type":0,"interface":"string","sourceID":0,"targetID":28,"body":{"request_type":0,"logical_clock":2,"device_id":0,"data":{"type":2,"message":"glupost","input_required":false,"user_input":0}}}
+radim msgboxmsgbox napravljenI
+
+
+{
+  "id": "string",
+  "network": "string",
+  "network_type": 0,
+  "interface": "string",
+  "sourceID": 0,
+  "targetID": 28,
+  "body": {
+    "request_type": 0,
+    "logical_clock": 2,
+    "device_id": 2,
+    "data": {
+       "type": 1,
+       "old_state": 0,
+       "new_state": 1
+    }
+  }
+}
+
+
+{
+  "id": "string",
+  "network": "string",
+  "network_type": 0,
+  "interface": "string",
+  "sourceID": 0,
+  "targetID": 28,
+  "body": {
+    "request_type": 0,
+    "logical_clock": 2,
+    "device_id": 2,
+    "data": {
+       "type": 1,
+       "old_state": 0,
+       "new_state": 1
+    }
+  }
+}

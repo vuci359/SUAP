@@ -56,15 +56,15 @@ const char* generate_sensor_datagram(int *measurement, char *unit){
     static char json[REQUEST_BODY_SIZE] = "";
     //printf("prob... %s", json);
 
-    strcpy(json, "{\"type\":0, ");
+    strcpy(json, "{\"type\":0");
         if(measurement == NULL){
-            strcat(json, "\"measurement\":"); strcat(json, "null");
+            strcat(json, ",\"measurement\":"); strcat(json, "null");
             //printf("probaa... %s", json);
 
         }else{
             char pom[5]; sprintf(pom ,"%d", *measurement);
 
-            strcat(json, "\"measurement\":"); strcat(json, pom);
+            strcat(json, ",\"measurement\":"); strcat(json, pom);
             //printf("probaaa... %s", json);
 
         }
@@ -84,29 +84,35 @@ const char* generate_sensor_datagram(int *measurement, char *unit){
 
 const char* generate_actuator_datagram(int *old_state, int *new_state){
     static char json[REQUEST_BODY_SIZE] = "";
-    strcpy(json, "{\"type\":1, ");
+    strcpy(json, "{\"type\":1");
     if(old_state == NULL){
             strcat(json, ",\"old_state\":");strcat(json, "null");
         } else {
-            strcat(json, ",\"old_state\":");strcat(json, old_state);
+            char pom[5];
+            sprintf(pom, "%d", *old_state);
+            strcat(json, ",\"old_state\":");strcat(json, pom);
         }
         if(new_state == NULL){
             strcat(json, ",\"new_state\":");strcat(json, "null");
         } else {
-            strcat(json, ",\"new_state\":");strcat(json, new_state);
+            char pom[5];
+            sprintf(pom, "%d", *new_state);
+            strcat(json, ",\"new_state\":");strcat(json, pom);
         }    strcat(json, "}");
     return json;
 }
 
 const char* generate_user_datagram(char *message, bool *input_required, int *user_input){
     static char json[REQUEST_BODY_SIZE] = "";
-    strcpy(json, "{\"type\":2, ");
+    strcpy(json, "{\"type\":2");
     strcat(json, ",\"message\":");
     if(*message == NULL){
         strcat(json, "null");
     }
     else {
+        strcat(json, "\"");
         strcat(json, message);
+        strcat(json, "\"");
     }
         if(*input_required){
             strcat(json, ",\"input_required\":"); strcat(json, "true");

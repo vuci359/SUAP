@@ -1,6 +1,7 @@
 #include "datagram_handling.h"
 
-lv_obj_t * mbox2;
+int pom_answr;
+//lv_obj_t * mbox2;
 
 
 void update_logical_clock(int *logical_clock){
@@ -44,21 +45,6 @@ int parse_request(char *request){
 
     err = parse_datagram(&main_request, ID, network, &network_type, interface, &sourceID, &targetID);
 
- //   printf("%ld\n", (long int) body);
- //   cJSON *pom = cJSON_GetObjectItem(body, "device_id");
- //   printf("%s\n", ID);
-
-  //  printf("error %d\n", err);
-
-  //  if(err != 0){
-   //     if(main_request != NULL){
-         //   cJSON_Delete(main_request);
-     //       main_request = NULL;
-      //  }
-     //   return err;
- //   }
-
-//
     err = parse_datagram_body(&body, &request_type, &logical_clock, &device_id);
     update_logical_clock(&logical_clock);
    // printf("error %d\n", request_type);
@@ -86,15 +72,7 @@ int parse_request(char *request){
         }
         return err; //kasnije složiti slanje greške...
        }
-    //   printf("%d %s\n", measurement, unit);
 
-   // char* fff = generate_sensor_datagram(&measurement, unit);
-    //   if(fff == NULL){
-    //    printf("NULL pointer!!!!!!");
-    //   }
-    //   else{
-     //   printf("%s\n", fff);
-     //  }
        //stvaranje odgovora
        strcpy(reply, "");
        char *dta = generate_sensor_datagram(&measurement, unit); //IOT_SENSOR
@@ -140,6 +118,9 @@ int parse_request(char *request){
            char *dta = generate_actuator_datagram(&old_state, &new_state); //ACTUATOR
            char *bdy = generate_datagram_body(dta, REPLY, &current_logical_clock, &device_id);
            strcpy(reply, generate_datagram(bdy, ID, network, &network_type, interface, &targetID, &sourceID));
+
+           printf("ttt %s bbb\n",reply);
+
          //  free(dta);
           // free(bdy);
 
@@ -162,21 +143,17 @@ int parse_request(char *request){
             }
             return err; //kasnije složiti slanje greške...
            }
-        err = generate_user_datagram("nekaj", &input_required, &answer);
-        //if(err != 0){
-        //    if(main_request != NULL){
-       //         cJSON_Delete(main_request);
-       //         main_request = NULL;
-       //     }
-      //      return err; //kasnije složiti slanje greške...
-      //     }
+
+        err = generate_user_datagram(message, &input_required, &answer);
+
            strcpy(reply, "");
 
            char *dta = generate_user_datagram(&message, &input_required, &answer); //USER
            char *bdy = generate_datagram_body(dta, REPLY, &current_logical_clock, &device_id);
            strcpy(reply, generate_datagram(bdy, ID, network, &network_type, interface, &targetID, &sourceID));
-          // free(dta);
-          // free(bdy);
+
+           printf("ttt %s bbb\n",reply);
+
                                     
 
     }else{
@@ -220,13 +197,14 @@ int read_data_from_sensor(int *sensor_id, int *value, char *unit){
 }
 
 int set_actuator_state(int *actuator_id, int *new_state){
-    ESP_LOGI(pars, "Turn on LCD backlight");
+    ESP_LOGI(pars, "Turn LCD backlight %d", *new_state);
     gpio_set_level(EXAMPLE_PIN_NUM_BK_LIGHT, *new_state);
     return 0;
 }
-int get_actuator_state(int *actuator_id, int *new_state){
-    ESP_LOGI(pars, "Turn on LCD backlight");
-    *new_state = gpio_get_level(EXAMPLE_PIN_NUM_BK_LIGHT);
+int get_actuator_state(int *actuator_id, int *old_state){
+    *old_state = gpio_get_level(EXAMPLE_PIN_NUM_BK_LIGHT);
+    ESP_LOGI(pars, "Check LCD backlight %d", *old_state);
+
     return 0;
 }
 
@@ -236,26 +214,48 @@ static void mevent_cb(lv_event_t * e)
     lv_obj_t * label = lv_obj_get_child(btn, 0);
     LV_UNUSED(label);
     LV_LOG_USER("Button %s clicked", lv_label_get_text(label));
+    const int *x = e->user_data;
+    pom_answr = *x; //derefen+renciram x i spremem u pom_answr
     lv_obj_del(mbox2);
 }
 
 int display_message_to_user(char *message, bool *input_required, int *answer){
+    pom_answr = *answer;
+        static const char *btn_ids[8] = {"0","1","2","3"};
+
    // printf("radim msgbox");
-    while(1){
+    while(1){ //čekam mutex
         if (example_lvgl_lock(-1)) {
-            mbox2 = lv_msgbox_create(lv_layer_top(), "MESSAGE", message, answer, true);
+
+            if(*input_required){
+                mbox2 = lv_msgbox_create(lv_layer_top(), "MESSAGE", message, btn_ids, true);
+
+            } else {
+                mbox2 = lv_msgbox_create(lv_layer_top(), "MESSAGE", message, NULL, true);        
+            }
             // Release the mutex
         example_lvgl_unlock();
         break;
         }
     }
  //   printf("msgbox napravljen");
-    lv_obj_add_event_cb(mbox2, mevent_cb, LV_EVENT_VALUE_CHANGED, NULL);
+    lv_obj_add_event_cb(mbox2, mevent_cb, LV_EVENT_VALUE_CHANGED, -1);
     lv_obj_center(mbox2);
+
     lv_group_add_obj(g2,mbox2);
     lv_group_add_obj(g2,lv_msgbox_get_close_btn(mbox2));
+    //lv_group_add_obj(g2,lv_msgbox_get_btns(mbox2));
     lv_group_focus_obj(lv_msgbox_get_close_btn(mbox2));
-    
+  
+
+    if(pom_answr != -1){
+        *answer = pom_answr;
+    } else{
+        *answer = NULL;
+    }
+
+
+    vTaskDelay(10000/portTICK_PERIOD_MS); //čekam odgovor, nije vezano za ovu funkciju, amo je mjesto praktično...
     
     return 0;
 }

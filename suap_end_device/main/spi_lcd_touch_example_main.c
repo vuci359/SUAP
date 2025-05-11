@@ -38,6 +38,8 @@
 static const char *TAG = "SUAP";
 
 lv_disp_t *disp;
+lv_obj_t * mbox2;
+
 
 //strukture podataka i funkcije za enkoder
 typedef struct
