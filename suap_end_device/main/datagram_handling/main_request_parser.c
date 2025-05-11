@@ -162,14 +162,14 @@ int parse_request(char *request){
             }
             return err; //kasnije složiti slanje greške...
            }
-        err = generate_user_datagram(NULL, &input_required, &answer);
-        if(err != 0){
-            if(main_request != NULL){
-                cJSON_Delete(main_request);
-                main_request = NULL;
-            }
-            return err; //kasnije složiti slanje greške...
-           }
+        err = generate_user_datagram("nekaj", &input_required, &answer);
+        //if(err != 0){
+        //    if(main_request != NULL){
+       //         cJSON_Delete(main_request);
+       //         main_request = NULL;
+       //     }
+      //      return err; //kasnije složiti slanje greške...
+      //     }
            strcpy(reply, "");
 
            char *dta = generate_user_datagram(&message, &input_required, &answer); //USER
@@ -195,6 +195,9 @@ int parse_request(char *request){
     return err;
 
 }
+
+
+
 
 int read_data_from_sensor(int *sensor_id, int *value, char *unit){
     if(*sensor_id == WLAN0){
@@ -237,7 +240,16 @@ static void mevent_cb(lv_event_t * e)
 }
 
 int display_message_to_user(char *message, bool *input_required, int *answer){
-    mbox2 = lv_msgbox_create(lv_layer_top(), "MESSAGE", message, answer, true);
+   // printf("radim msgbox");
+    while(1){
+        if (example_lvgl_lock(-1)) {
+            mbox2 = lv_msgbox_create(lv_layer_top(), "MESSAGE", message, answer, true);
+            // Release the mutex
+        example_lvgl_unlock();
+        break;
+        }
+    }
+ //   printf("msgbox napravljen");
     lv_obj_add_event_cb(mbox2, mevent_cb, LV_EVENT_VALUE_CHANGED, NULL);
     lv_obj_center(mbox2);
     lv_group_add_obj(g2,mbox2);

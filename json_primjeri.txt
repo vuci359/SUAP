@@ -8,3 +8,24 @@ ttt {"ID":"ccc","network":"string","network_type":5,"interface":"string","source
 {"id":"ccc","network":"string","network_type":5,"interface":"string","sourceID":49,"targetID":67,"body":{"request_type":0,"logical_clock":0,"device_id":0,"data":{"type":0}}}
 
 {"ID":"ccc","network":"string","network_type":5,"interface":"string","sourceID":67,"targetID":49,"body":{"request_type":1,"logical_clock":4,"device_id":0,"data":{"type":0, "measurement":-52,"unit":"dBi"}}}
+
+
+{
+  "id": "string",
+  "network": "string",
+  "network_type": 0,
+  "interface": "string",
+  "sourceID": 0,
+  "targetID": 28,
+  "body": {
+    "request_type": 0,
+    "logical_clock": 2,
+    "device_id": 0,
+    "data": {
+       "type": 2,
+       "message": "nemampojma",
+       "input_required": false,
+       "user_input": 0
+    }
+  }
+}

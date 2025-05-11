@@ -86,14 +86,14 @@ const char* generate_actuator_datagram(int *old_state, int *new_state){
     static char json[REQUEST_BODY_SIZE] = "";
     strcpy(json, "{\"type\":1, ");
     if(old_state == NULL){
-            strcat(json, "\"old_state\":");strcat(json, "null");
+            strcat(json, ",\"old_state\":");strcat(json, "null");
         } else {
-            strcat(json, "\"old_state\":");strcat(json, old_state);
+            strcat(json, ",\"old_state\":");strcat(json, old_state);
         }
         if(new_state == NULL){
-            strcat(json, "\"new_state\":");strcat(json, "null");
+            strcat(json, ",\"new_state\":");strcat(json, "null");
         } else {
-            strcat(json, "\"new_state\":");strcat(json, new_state);
+            strcat(json, ",\"new_state\":");strcat(json, new_state);
         }    strcat(json, "}");
     return json;
 }
@@ -101,17 +101,25 @@ const char* generate_actuator_datagram(int *old_state, int *new_state){
 const char* generate_user_datagram(char *message, bool *input_required, int *user_input){
     static char json[REQUEST_BODY_SIZE] = "";
     strcpy(json, "{\"type\":2, ");
-    strcat(json, "\"message\":");strcat(json, message);
+    strcat(json, ",\"message\":");
+    if(*message == NULL){
+        strcat(json, "null");
+    }
+    else {
+        strcat(json, message);
+    }
         if(*input_required){
-            strcat(json, "\"input_required\":"); strcat(json, "true");
+            strcat(json, ",\"input_required\":"); strcat(json, "true");
         }else if(!*input_required){
-            strcat(json, "\"input_required\":"); strcat(json, "false");
+            strcat(json, ",\"input_required\":"); strcat(json, "false");
         }
         if(user_input == NULL){
-            strcat(json, "\"user_input\":"); strcat(json, "null");
+            strcat(json, ",\"user_input\":"); strcat(json, "null");
 
         }else {
-            strcat(json, "\"user_input\":"); strcat(json, *user_input);
+            char pom[5];
+            sprintf(pom, "%d", *user_input);
+            strcat(json, ",\"user_input\":"); strcat(json, pom);
         }
     strcat(json, "}");
     return json;

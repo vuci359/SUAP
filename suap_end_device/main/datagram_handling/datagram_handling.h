@@ -17,6 +17,8 @@
 #include "networking/http_handling.h"
 #include "global_variables.h"
 
+#include "drivers/display.h"
+
 
 //string sizes
 #define REQUEST_STRING_SIZE 300
