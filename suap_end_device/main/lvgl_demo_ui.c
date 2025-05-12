@@ -21,6 +21,8 @@
 #include "networking/http_handling.h"
 
 #include "global_variables.h"
+#include "drivers/display.h"
+
 
 #define MIN(a,b) (((a)<(b))?(a):(b))
 #define MAX(a,b) (((a)>(b))?(a):(b))
@@ -88,7 +90,16 @@ static void mevent_cb(lv_event_t * e)
     lv_obj_t * label = lv_obj_get_child(btn, 0);
     LV_UNUSED(label);
     LV_LOG_USER("Button %s clicked", lv_label_get_text(label));
-    lv_obj_del(mbox1);
+    while(1){ //čekam mutex
+      if (example_lvgl_lock(-1)) {
+
+          lv_obj_del(mbox1);
+
+      // Release the mutex
+          example_lvgl_unlock();
+      break;
+      }
+  }
 }
 
 

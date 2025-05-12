@@ -1,6 +1,7 @@
 #include "datagram_handling.h"
 
-int pom_answr;
+int pom_answr = NULL;
+bool answered = false;
 //lv_obj_t * mbox2;
 
 
@@ -90,6 +91,7 @@ int parse_request(char *request){
 
 
     }else if(device_type == ACTUATOR){
+        answered = false;
         data = cJSON_GetObjectItem(body, "data");
         err = parse_actuator_datagram(&data, &old_state, &new_state);
         if(err != 0){
@@ -143,6 +145,12 @@ int parse_request(char *request){
             }
             return err; //kasnije složiti slanje greške...
            }
+        if(pom_answr != -1){
+            answer = pom_answr;
+            printf("answer: %d\n", answer);
+        } else{
+            answer = NULL;
+        }
 
         err = generate_user_datagram(message, &input_required, &answer);
 
@@ -210,13 +218,25 @@ int get_actuator_state(int *actuator_id, int *old_state){
 
 static void mevent_cb(lv_event_t * e)
 {
-    lv_obj_t * btn = lv_event_get_target(e);
-    lv_obj_t * label = lv_obj_get_child(btn, 0);
-    LV_UNUSED(label);
-    LV_LOG_USER("Button %s clicked", lv_label_get_text(label));
-    const int *x = e->user_data;
-    pom_answr = *x; //derefen+renciram x i spremem u pom_answr
-    lv_obj_del(mbox2);
+    //lv_obj_t * btn = lv_event_get_target(e);
+    //lv_obj_t * label = lv_obj_get_child(btn, 0);
+    //LV_UNUSED(label);
+
+    while(1){ //čekam mutex
+        if (example_lvgl_lock(-1)) {
+
+            lv_obj_del(mbox2);
+            printf("Button %d clicked\n", lv_btnmatrix_get_selected_btn(lv_msgbox_get_btns(mbox2)));
+            printf("Button text: %s\n",lv_btnmatrix_get_btn_text(lv_msgbox_get_btns(mbox2), lv_btnmatrix_get_selected_btn(lv_msgbox_get_btns(mbox2))));
+            //  const int *x = e->user_data;
+            pom_answr = atoi(lv_btnmatrix_get_btn_text(lv_msgbox_get_btns(mbox2), lv_btnmatrix_get_selected_btn(lv_msgbox_get_btns(mbox2)))); //derefen+renciram x i spremem u pom_answr
+            answered = true;
+
+        // Release the mutex
+            example_lvgl_unlock();
+        break;
+        }
+    }
 }
 
 int display_message_to_user(char *message, bool *input_required, int *answer){
@@ -233,29 +253,29 @@ int display_message_to_user(char *message, bool *input_required, int *answer){
             } else {
                 mbox2 = lv_msgbox_create(lv_layer_top(), "MESSAGE", message, NULL, true);        
             }
+
+            lv_obj_add_event_cb(mbox2, mevent_cb, LV_EVENT_VALUE_CHANGED, -1);
+            lv_obj_center(mbox2);
+
+            lv_group_add_obj(g2,mbox2);
+            lv_group_add_obj(g2,lv_msgbox_get_close_btn(mbox2));
+            if(*input_required){
+                lv_group_add_obj(g2,lv_msgbox_get_btns(mbox2));
+                lv_btnmatrix_set_btn_ctrl(lv_msgbox_get_btns(mbox2), 0, LV_BTNMATRIX_CTRL_CLICK_TRIG);
+                lv_btnmatrix_set_one_checked(lv_msgbox_get_btns(mbox2),true);//namjerno označavam prvi gumb da me ne maltretira da treba nekaj kloknuti...
+                lv_group_focus_obj(lv_msgbox_get_btns(mbox2));
+            }
+            else{
+                lv_group_focus_obj(lv_msgbox_get_close_btn(mbox2));
+            }
             // Release the mutex
-        example_lvgl_unlock();
-        break;
+            example_lvgl_unlock();
+            break;
         }
     }
  //   printf("msgbox napravljen");
-    lv_obj_add_event_cb(mbox2, mevent_cb, LV_EVENT_VALUE_CHANGED, -1);
-    lv_obj_center(mbox2);
-
-    lv_group_add_obj(g2,mbox2);
-    lv_group_add_obj(g2,lv_msgbox_get_close_btn(mbox2));
-    //lv_group_add_obj(g2,lv_msgbox_get_btns(mbox2));
-    lv_group_focus_obj(lv_msgbox_get_close_btn(mbox2));
-  
-
-    if(pom_answr != -1){
-        *answer = pom_answr;
-    } else{
-        *answer = NULL;
+    while(!answered){
+        vTaskDelay(1000/portTICK_PERIOD_MS); //čekam odgovor, nije vezano za ovu funkciju, samo je mjesto praktično...
     }
-
-
-    vTaskDelay(10000/portTICK_PERIOD_MS); //čekam odgovor, nije vezano za ovu funkciju, amo je mjesto praktično...
-    
     return 0;
 }
