@@ -224,13 +224,17 @@ static void mevent_cb(lv_event_t * e)
 
     while(1){ //čekam mutex
         if (example_lvgl_lock(-1)) {
+            pom_answr = -1;
 
-            lv_obj_del(mbox2);
-            printf("Button %d clicked\n", lv_btnmatrix_get_selected_btn(lv_msgbox_get_btns(mbox2)));
-            printf("Button text: %s\n",lv_btnmatrix_get_btn_text(lv_msgbox_get_btns(mbox2), lv_btnmatrix_get_selected_btn(lv_msgbox_get_btns(mbox2))));
+           // printf("Button %d clicked\n", lv_btnmatrix_get_selected_btn(lv_msgbox_get_btns(mbox2)));
+          //  printf("Button text: %s\n",lv_btnmatrix_get_btn_text(lv_msgbox_get_btns(mbox2), lv_btnmatrix_get_selected_btn(lv_msgbox_get_btns(mbox2))));
             //  const int *x = e->user_data;
-            pom_answr = atoi(lv_btnmatrix_get_btn_text(lv_msgbox_get_btns(mbox2), lv_btnmatrix_get_selected_btn(lv_msgbox_get_btns(mbox2)))); //derefen+renciram x i spremem u pom_answr
+            //pom_answr = atoi(lv_btnmatrix_get_btn_text(lv_msgbox_get_btns(lv_event_get_target(e)), lv_btnmatrix_get_selected_btn(lv_msgbox_get_btns(lv_event_get_target(e))))); //derefen+renciram x i spremem u pom_answr
+            if(lv_msgbox_get_btns(mbox2) != NULL){
+                pom_answr = lv_btnmatrix_get_selected_btn(lv_msgbox_get_btns(mbox2));
+            }
             answered = true;
+            lv_obj_del(mbox2);
 
         // Release the mutex
             example_lvgl_unlock();
