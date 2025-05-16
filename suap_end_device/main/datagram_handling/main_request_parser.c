@@ -65,6 +65,8 @@ int parse_request(char *request){
     if(device_type == IOT_SENZOR){ //neznam zakaj tu crveno podcrtava...
        // err = parse_sensor_datagram(data, &measurement, unit); //treba mi za reply
        // err = display_sensor_data_to_user(sourceID, device_id, measurement, unit); //za prekapati reply
+
+       if(request_type == REQUEST){
        err = read_data_from_sensor(&device_id, &measurement, unit);
        if(err != 0){
         if(main_request != NULL){
@@ -88,9 +90,18 @@ int parse_request(char *request){
 
         printf("ttt %s bbb\n",reply);
        // ESP_LOGI(pars, "%s", odg);
+    }else if(request_type == REPLY){
+        char* data_from_sensor[50];
+        sprintf(data_from_sensor,"Data from device %d, sensor %d :\n %d %s",sourceID, device_id, measurement, unit);
+        err = display_message_to_user(data_from_sensor, false, &answer);
+    }
+    else{
+        ESP_LOGE(pars,"SENSOR; nepoznata vrsta zahtjeva");
+    }
 
 
     }else if(device_type == ACTUATOR){
+        if(request_type == REQUEST){
         answered = false;
         data = cJSON_GetObjectItem(body, "data");
         err = parse_actuator_datagram(&data, &old_state, &new_state);
@@ -125,6 +136,14 @@ int parse_request(char *request){
 
          //  free(dta);
           // free(bdy);
+        }else if(request_type == REPLY){
+            char* data_from_actuator[100];
+            sprintf(data_from_actuator,"Data from device %d, actuator %d :\n odl state: %d\n new state: %d",sourceID, device_id, old_state, new_state);
+            err = display_message_to_user(data_from_actuator, false, &answer);
+        }
+        else{
+            ESP_LOGE(pars,"SENSOR; nepoznata vrsta zahtjeva");
+        }
 
 
     }else if(device_type == USER){
@@ -171,7 +190,9 @@ int parse_request(char *request){
     }
 
 
-    post_rest_function(pod, odg, BASE_URL"/Datagram/PushMessage/", reply);
+    if(request_type == REQUEST) {
+        post_rest_function(pod, odg, BASE_URL"/Datagram/PushMessage/", reply);
+    }
     if(main_request != NULL){
         //cJSON_Delete(main_request);
         main_request = NULL;
