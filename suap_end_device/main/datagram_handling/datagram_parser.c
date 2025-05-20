@@ -139,7 +139,7 @@ int parse_sensor_datagram(cJSON **json, int* measurement, char* unit){
             ESP_LOGE(pars, "Mjerna jedinica nije string");
             return -3;
         }
-        *unit = pom->valueint;
+        strcpy(unit, pom->valuestring);
         cJSON_Delete(pom);
     return 0;
 }

@@ -31,6 +31,10 @@ ttt {"ID":"ccc","network":"string","network_type":5,"interface":"string","source
 }
 
 {"id":"string","network":"string","network_type":0,"interface":"string","sourceID":0,"targetID":28,"body":{"request_type":0,"logical_clock":2,"device_id":0,"data":{"type":2,"message":"glupost","input_required":false,"user_input":0}}}
+
+{"ID":"string","network":"string","network_type":0,"interface":"string","sourceID":28,"targetID":0,"body":{"request_type":1,"logical_clock":5,"device_id":0,"data":{"type":2, ,"message":p�,"input_required":false,"user_input":0}}}
+
+
 radim msgboxmsgbox napravljenI
 
 
@@ -72,3 +76,24 @@ radim msgboxmsgbox napravljenI
     }
   }
 }
+
+{
+  "id": "string",
+  "network": "string",
+  "network_type": 0,
+  "interface": "string",
+  "sourceID": 0,
+  "targetID": 28,
+  "body": {
+    "request_type": 1,
+    "logical_clock": 2,
+    "device_id": 2,
+    "data": {
+       "type": 1,
+       "old_state": 0,
+       "new_state": 1
+    }
+  }
+}
+
+{"ID":"ccc","network":"string","network_type":5,"interface":"string","sourceID":67,"targetID":28,"body":{"request_type":1,"logical_clock":4,"device_id":0,"data":{"type":0, "measurement":-52,"unit":"dBi"}}}

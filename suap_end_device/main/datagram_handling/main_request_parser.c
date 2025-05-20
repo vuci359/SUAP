@@ -91,9 +91,13 @@ int parse_request(char *request){
         printf("ttt %s bbb\n",reply);
        // ESP_LOGI(pars, "%s", odg);
     }else if(request_type == REPLY){
-        char* data_from_sensor[50];
+        char* data_from_sensor[60];
+        input_required = false;
+        data = cJSON_GetObjectItem(body, "data");
+        err = parse_sensor_datagram(&data, &measurement, unit);
         sprintf(data_from_sensor,"Data from device %d, sensor %d :\n %d %s",sourceID, device_id, measurement, unit);
-        err = display_message_to_user(data_from_sensor, false, &answer);
+        //printf("Data from device %d, sensor %d :\n %d %s",sourceID, device_id, measurement, unit);
+        err = display_message_to_user(data_from_sensor, &input_required, &answer);
     }
     else{
         ESP_LOGE(pars,"SENSOR; nepoznata vrsta zahtjeva");
@@ -138,8 +142,11 @@ int parse_request(char *request){
           // free(bdy);
         }else if(request_type == REPLY){
             char* data_from_actuator[100];
-            sprintf(data_from_actuator,"Data from device %d, actuator %d :\n odl state: %d\n new state: %d",sourceID, device_id, old_state, new_state);
-            err = display_message_to_user(data_from_actuator, false, &answer);
+            input_required  = false;
+            data = cJSON_GetObjectItem(body, "data");
+            err = parse_actuator_datagram(&data, &old_state, &new_state);
+            sprintf(data_from_actuator,"Data from device %d, actuator %d :\n old state: %d\n new state: %d",sourceID, device_id, old_state, new_state);
+            err = display_message_to_user(data_from_actuator, &input_required, &answer);
         }
         else{
             ESP_LOGE(pars,"SENSOR; nepoznata vrsta zahtjeva");
@@ -155,6 +162,9 @@ int parse_request(char *request){
                 main_request = NULL;
             }
             return err; //kasnije složiti slanje greške...
+           }
+           if(request_type == REPLY){
+                input_required = false;
            }
         err = display_message_to_user(message, &input_required, &answer);
         if(err != 0){
@@ -299,7 +309,7 @@ int display_message_to_user(char *message, bool *input_required, int *answer){
         }
     }
  //   printf("msgbox napravljen");
-    while(!answered){
+    while(*input_required && !answered){
         vTaskDelay(1000/portTICK_PERIOD_MS); //čekam odgovor, nije vezano za ovu funkciju, samo je mjesto praktično...
     }
     return 0;
