@@ -246,7 +246,7 @@ void app_main(void)
     ESP_LOGI(TAG, "Register function ended with status %d", err);
     xTaskCreate(find_neighbours, "Neighbours", 8192, NULL, EXAMPLE_LVGL_TASK_PRIORITY, NULL);
 
-    initialise_device_from_config_file("/config/interface_config.json");
+    initialise_device_from_config_file("/littlefs/interface_config.json");
 
     xTaskCreate(get_messages, "MEssages", 8192*2, NULL, EXAMPLE_LVGL_TASK_PRIORITY, NULL);
 

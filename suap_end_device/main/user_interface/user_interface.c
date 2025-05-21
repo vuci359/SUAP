@@ -6,7 +6,8 @@
 #include "user_interface/user_interface.h"
 // This demo UI is adapted from LVGL official example: https://docs.lvgl.io/master/widgets/extra/meter.html#simple-meter
 
-
+lv_obj_t * list1;
+lv_obj_t * list2;
 
 static int extract_relevant_data(char *json){
 
@@ -178,9 +179,21 @@ void example_lvgl_demo_ui(lv_indev_t *encoder1i, lv_indev_t *encoder2i)
     /*Create a sub page*/
     lv_obj_t * sub_page = lv_menu_page_create(menu, NULL);
 
-  lv_obj_t * btn1 = lv_btn_create(lv_scr_act());
+    list1 = lv_list_create(lv_scr_act());
+    lv_obj_set_size(list1, lv_pct(60), lv_pct(100));
+    lv_obj_set_style_pad_row(list1, 5, 0);
+
+    list2 = lv_list_create(lv_scr_act());
+    lv_obj_set_size(list2, lv_pct(60), lv_pct(100));
+    lv_obj_set_style_pad_row(list2, 5, 0);
+
+    lv_obj_align(list1, LV_ALIGN_CENTER, -50, 20);
+    lv_obj_align(list2, LV_ALIGN_CENTER, 50, 20);
+
+
+
+  lv_obj_t * btn1 = lv_btn_create(list1);
   lv_obj_add_event_cb(btn1, event_handler, LV_EVENT_ALL, NULL);
-  lv_obj_align(btn1, LV_ALIGN_CENTER, -50, -10);
 
   label = lv_label_create(btn1);
   lv_label_set_text(label, "Button");
@@ -190,9 +203,9 @@ void example_lvgl_demo_ui(lv_indev_t *encoder1i, lv_indev_t *encoder2i)
   lv_obj_align(count_label, LV_ALIGN_CENTER, 0, -60);
   lv_label_set_text(count_label, "Counts: 0");
 
-  lv_obj_t * btn2 = lv_btn_create(lv_scr_act());
+  lv_obj_t * btn2 = lv_btn_create(list1);
   lv_obj_add_event_cb(btn2, event_handler, LV_EVENT_ALL, NULL);
-  lv_obj_align(btn2, LV_ALIGN_CENTER, -50, 40);
+ // lv_obj_align(btn2, LV_ALIGN_CENTER, -50, 40);
   lv_obj_add_flag(btn2, LV_OBJ_FLAG_CHECKABLE);
   lv_obj_set_height(btn2, LV_SIZE_CONTENT);
 
@@ -204,17 +217,16 @@ void example_lvgl_demo_ui(lv_indev_t *encoder1i, lv_indev_t *encoder2i)
   lv_indev_set_group(encoder1i, g);
 
 
-  lv_obj_t * btn1b = lv_btn_create(lv_scr_act());
+  lv_obj_t * btn1b = lv_btn_create(list2);
   lv_obj_add_event_cb(btn1b, post_event_handler, LV_EVENT_ALL, NULL); //promjeniti u handler za HTTP POST
-  lv_obj_align(btn1b, LV_ALIGN_CENTER, 50, -10);
 
   label = lv_label_create(btn1b);
   lv_label_set_text(label, "POST");
   lv_obj_center(label);
 
-  lv_obj_t * btn2b = lv_btn_create(lv_scr_act());
+  lv_obj_t * btn2b = lv_btn_create(list2);
   lv_obj_add_event_cb(btn2b, get_event_handler, LV_EVENT_ALL, NULL); //promjeniti u handler za HTTP GET
-  lv_obj_align(btn2b, LV_ALIGN_CENTER, 50, 40);
+  //lv_obj_align(btn2b, LV_ALIGN_CENTER, 50, 40);
 
   label = lv_label_create(btn2b);
   lv_label_set_text(label, "GET");

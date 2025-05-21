@@ -12,3 +12,5 @@ idf_component_register(SRCS
                         "tasks/registration.c"
                         "tasks/request_getter.c"
                        INCLUDE_DIRS ".")
+
+littlefs_create_partition_image(littlefs ../littlefs FLASH_IN_PROJECT)

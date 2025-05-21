@@ -56,6 +56,10 @@ extern lv_disp_t *disp; //samo spominjem da postoji negdje u memoriji
 extern lv_indev_t *encoder1i;
 extern lv_indev_t *encoder2i;
 
+
+extern lv_obj_t * list1;
+extern lv_obj_t * list2;
+
 extern lv_obj_t * mbox1;
 extern lv_obj_t * mbox2;
 

@@ -28,10 +28,13 @@
 #define PROSJEK "prosjek"
 
 
-char *body_data = {"*"};
+static char *bdy_data = {"*"};
 static int zadnja_vrijednost = 0;
 static int brojac = 0;
 static double prosjek = 0;
+
+
+
 
 
 void example_lvgl_demo_ui(lv_indev_t *encoder1, lv_indev_t *encoder2);

@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("suap_api_server")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a324345df4ba331a40f613c4c1e460fb8f389fef")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f6a47c8755c2c6c6d535be07bd60bdb72a99880d")]
 [assembly: System.Reflection.AssemblyProductAttribute("suap_api_server")]
 [assembly: System.Reflection.AssemblyTitleAttribute("suap_api_server")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
