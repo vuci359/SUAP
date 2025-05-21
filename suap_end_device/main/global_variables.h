@@ -4,6 +4,10 @@
 #include "lvgl.h"
 #include "driver/gpio.h"
 
+static const char *TAG = "SUAP";
+static const char *TAGhttp = "HTTP";
+
+
 //network_type
 #define WiFi 0
 #define ZigBee 1
@@ -48,6 +52,9 @@ extern lv_disp_t *disp; //samo spominjem da postoji negdje u memoriji
 
 #define PERIPHERAL_DEVICES "[{\"device_type\": 0, \"device_id\": 0}, {\"device_type\": 1, \"device_id\": 1}, {\"device_type\": 2, \"device_id\": 2}]"
 //dopisati par requestova
+
+extern lv_indev_t *encoder1i;
+extern lv_indev_t *encoder2i;
 
 extern lv_obj_t * mbox1;
 extern lv_obj_t * mbox2;

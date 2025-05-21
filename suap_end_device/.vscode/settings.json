@@ -50,6 +50,8 @@
         "esp_mac.h": "c",
         "global_variables.h": "c",
         "tasks.h": "c",
-        "lv_img.h": "c"
+        "lv_img.h": "c",
+        "littlefs_data.h": "c",
+        "esp_littlefs.h": "c"
     }
 }

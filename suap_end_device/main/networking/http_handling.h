@@ -1,5 +1,5 @@
 #ifndef inc_http_handling_h_ccc
-#define inc_http_handling0_h_ccc
+#define inc_http_handling_h_ccc
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -16,7 +16,6 @@
 
 #include "esp_http_client.h"
 
-static const char *TAGhttp = "HTTP";
 
 extern char postResponseBuffer[MAX_HTTP_RECV_BUFFER];
 extern char responseBuffer[MAX_HTTP_RECV_BUFFER];

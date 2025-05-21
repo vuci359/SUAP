@@ -18,6 +18,8 @@
 #include "driver/spi_master.h"
 #include "esp_err.h"
 
+#include "drivers/littlefs_data.h"
+
 #define LOG_LOCAL_LEVEL ESP_LOG_VERBOSE
 #include "esp_log.h"
 #include "nvs_flash.h"
@@ -35,10 +37,12 @@
 
 #include "global_variables.h"
 
-static const char *TAG = "SUAP";
 
 lv_disp_t *disp;
 lv_obj_t * mbox2;
+
+lv_indev_t *encoder1i;
+lv_indev_t *encoder2i;
 
 
 //strukture podataka i funkcije za enkoder
@@ -59,7 +63,6 @@ static void main_encoder_cb(uint32_t knobPosition){
 esp_lcd_touch_handle_t tp = NULL;
 #endif
 
-extern void example_lvgl_demo_ui(lv_indev_t *encoder1, lv_indev_t *encoder2);
 int current_logical_clock = 0;
 
 
@@ -215,8 +218,8 @@ void app_main(void)
     encoder1d.read_cb = encoder1_read;
     encoder2d.type = LV_INDEV_TYPE_ENCODER;
     encoder2d.read_cb = encoder2_read;
-    lv_indev_t *encoder1i = lv_indev_drv_register(&encoder1d);
-    lv_indev_t *encoder2i = lv_indev_drv_register(&encoder2d);
+    encoder1i = lv_indev_drv_register(&encoder1d);
+    encoder2i = lv_indev_drv_register(&encoder2d);
 
     lvgl_mux = xSemaphoreCreateRecursiveMutex();
     assert(lvgl_mux);
@@ -237,22 +240,22 @@ void app_main(void)
     ESP_ERROR_CHECK(example_connect());
 
 
+
     ESP_LOGI(TAG, "Register device");
     int err = register_end_device();
     ESP_LOGI(TAG, "Register function ended with status %d", err);
     xTaskCreate(find_neighbours, "Neighbours", 8192, NULL, EXAMPLE_LVGL_TASK_PRIORITY, NULL);
+
+    initialise_device_from_config_file("/config/interface_config.json");
+
     xTaskCreate(get_messages, "MEssages", 8192*2, NULL, EXAMPLE_LVGL_TASK_PRIORITY, NULL);
 
 
 
 
-    ESP_LOGI(TAG, "Display LVGL Meter Widget");
+ //   ESP_LOGI(TAG, "Display LVGL Meter Widget");
     // Lock the mutex due to the LVGL APIs are not thread-safe
-    if (example_lvgl_lock(-1)) {
-        example_lvgl_demo_ui(encoder1i, encoder2i);
-        // Release the mutex
-        example_lvgl_unlock();
-    }
+    
 
 }
  
