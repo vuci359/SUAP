@@ -36,7 +36,7 @@ void initialise_device_from_config_file(char *filename){
                 ESP_LOGE(TAG, "Failed to open file for reading");
                 return;
         }
-        char buffer[2000]; 2000 znakova za konfiguraciju...
+        char buffer[2000]; //2000 znakova za konfiguraciju...
         int i = 0, c; //c is the intermediate variable, i is the increment variable
         while ((c = fgetc(f)) != EOF && i<2000) {//Read contents until it reach the end of the file
             buffer[i] = c;
