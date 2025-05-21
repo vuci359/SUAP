@@ -1,4 +1,5 @@
 #include "drivers/littlefs_data.h"
+#include <cJSON.h>
 
 
 void initialise_device_from_config_file(char *filename){
@@ -30,10 +31,12 @@ void initialise_device_from_config_file(char *filename){
         }
 
     ESP_LOGI(TAG, "Opening file");
-    FILE *f = fopen(filename, "r");
-        if (f == NULL)
-        {
-                ESP_LOGE(TAG, "Failed to open file for reading");
+    const cJSON *config;
+
+    { //idem u novi scope zboj šparanja memorije...
+        FILE *f = fopen(filename, "r");
+        if (f == NULL){
+            ESP_LOGE(TAG, "Failed to open file for reading");
                 return;
         }
         char buffer[2000]; //2000 znakova za konfiguraciju...
@@ -43,8 +46,18 @@ void initialise_device_from_config_file(char *filename){
             i++;
         }
         printf("%s\n", buffer);
-     //   fprintf(f, "LittleFS Rocks!\n");
+        //   fprintf(f, "LittleFS Rocks!\n");
         fclose(f);
+         config = cJSON_Parse(buffer);
+    }
+
+    cJSON *request = NULL;
+    if(config == NULL){
+        ESP_LOGE(TAG, "nemam json");
+    }
+
+
+    //tu ide obrada JSON-a
 
     if (example_lvgl_lock(-1)) {
         example_lvgl_demo_ui(encoder1i, encoder2i);
