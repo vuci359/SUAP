@@ -3,11 +3,13 @@
         "widget_type": "button",
         "label": "REQ1",
         "group": 1,
+        "slider": null,
+        "method": "POST",
         "request":{
-            "id": "string",
-            "network": "string",
+            "id": "predef_request1",
+            "network": "WiFi1",
             "network_type": 0,
-            "interface": "string",
+            "interface": "WIFI",
             "sourceID": 0,
             "targetID": 28,
             "body": {
@@ -26,11 +28,17 @@
         "widget_type": "button",
         "label": "RPL1",
         "group": 1,
+        "slider": {
+            "min": 0,
+            "max": 1,
+            "step": 1
+        },
+        "method": "POST",
         "request":{
-            "id": "string",
-            "network": "string",
+            "id": "predef_request2",
+            "network": "WiFi1",
             "network_type": 0,
-            "interface": "string",
+            "interface": "WIFI",
             "sourceID": 0,
             "targetID": 28,
             "body": {

@@ -7,6 +7,8 @@
 static const char *TAG = "SUAP";
 static const char *TAGhttp = "HTTP";
 
+//maksimalni broj ugrađenih zahtjeva
+#define MAX_REQUEST_COUNT 10
 
 //network_type
 #define WiFi 0
@@ -42,7 +44,9 @@ extern lv_disp_t *disp; //samo spominjem da postoji negdje u memoriji
 
 #define MAX_HTTP_RECV_BUFFER 1024
 
+//#define SERVER_IP "10.42.0.1:5023"
 #define SERVER_IP "10.200.2.194:5023"
+
 
 #define BASE_URL "http://"SERVER_IP"/api"
 
@@ -89,5 +93,8 @@ extern end_device neighbours[100];
 extern int current_logical_clock;
 static const char *pars = "main request parser"; //nek si kompajler napravi zasebnu kopiju za svaku funkciju da me ne maltretira...
 
+
+extern cJSON *req[MAX_REQUEST_COUNT];
+extern int request_count;
 
 #endif
