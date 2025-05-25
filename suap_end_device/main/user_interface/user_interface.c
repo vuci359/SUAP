@@ -237,3 +237,6 @@ void example_lvgl_demo_ui(lv_indev_t *encoder1i, lv_indev_t *encoder2i)
   lv_indev_set_group(encoder2i, g2);
   
   }
+
+
+  lv_obj_get_child_id(list_btn);

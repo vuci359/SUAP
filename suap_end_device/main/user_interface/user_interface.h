@@ -39,7 +39,9 @@ static double prosjek = 0;
 
 void example_lvgl_demo_ui(lv_indev_t *encoder1, lv_indev_t *encoder2);
 
-int add_button_without_slider(int index, char* label);
+int add_button_without_slider(int group, char* label, char* method);
+int add_button_with_slider(int group, char* label, char* method, int min_value, int max_value, int step);
+
 
 
 

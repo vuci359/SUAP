@@ -53,10 +53,13 @@ void initialise_device_from_config_file(char *filename){
          config = cJSON_Parse(buffer);
     }
 
-    cJSON *request = NULL, *elem, *pom;
+    cJSON *request = NULL, *elem, *pom, *pom2;
     char widget_type[10];
     char label[10];
-    int group = 0; 
+    int group = 0;
+    bool treba_slider = false;
+    int slider_min, slider_max, slider_step;
+    char method[10];
 
     if(config == NULL){
         ESP_LOGE(TAG, "root JSON je NULL");
@@ -70,15 +73,65 @@ void initialise_device_from_config_file(char *filename){
     for(int i = 0; i < request_count; i++){
         elem = cJSON_GetArrayItem(config, i);
         pom = cJSON_GetObjectItem(elem, "widget_type");
+        if (!cJSON_IsNumber(pom)){
+            ESP_LOGE(TAG, "widget_type nije string");
+            return;
+        }
+        strcpy(widget_type, pom->valuestring);
         pom = cJSON_GetObjectItem(elem, "label");
+        if (!cJSON_IsNumber(pom)){
+            ESP_LOGE(TAG, "label nije string");
+            return;
+        }
+        strcpy(label, pom->valuestring);
         pom = cJSON_GetObjectItem(elem, "group");
+        if (!cJSON_IsNumber(pom)){
+            ESP_LOGE(TAG, "group nije broj");
+            return;
+        }
+        group = pom->valueint;
+        treba_slider = false;
         pom = cJSON_GetObjectItem(elem, "slider");
+        if(!cJSON_IsNull(pom)){
+            treba_slider = true;
+            pom2 = cJSON_GetObjectItem(pom, "min");
+            if (!cJSON_IsNumber(pom)){
+                ESP_LOGE(TAG, "min nije broj");
+                return;
+            }
+            slider_min = pom2->valueint;
+            pom2 = cJSON_GetObjectItem(pom, "max");
+            if (!cJSON_IsNumber(pom)){
+                ESP_LOGE(TAG, "max nije broj");
+                return;
+            }
+            slider_max = pom2->valueint;
+            pom2 = cJSON_GetObjectItem(pom, "step");
+            if (!cJSON_IsNumber(pom)){
+                ESP_LOGE(TAG, "step nije broj");
+                return;
+            }
+            slider_step = pom2->valueint;
+        }
+
         pom = cJSON_GetObjectItem(elem, "method");
+        if (!cJSON_IsString(pom)){
+            ESP_LOGE(TAG, "method nije string");
+            return;
+        }
+        strcpy(method, pom->valuestring);
         pom = cJSON_GetObjectItem(elem, "request");
         req[i] = malloc(sizeof(pom)); //alociranje memorije
         memcpy(req[i], pom, sizeof(pom)); //spremanje duplikara requesta da se ne izgubi
        // strcpy(req[i], cJSON_Print(pom)); //zahtjev treba kopirati i stringizvlačiti kod slanja..
        // printf("%s\n", req[i]); //ne pije vodu...
+
+        if(treba_slider){
+            add_button_without_slider(group, label, method);
+        } else{
+            add_button_with_slider(group, label, method, slider_min, slider_max, slider_step);
+        }
+
     }
 
     //tu ide obrada JSON-a
