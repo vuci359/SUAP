@@ -1,29 +1,4 @@
 [
-    {
-        "widget_type": "button",
-        "label": "REQ1",
-        "group": 1,
-        "slider": null,
-        "method": "POST",
-        "request":{
-            "id": "predef_request1",
-            "network": "WiFi1",
-            "network_type": 0,
-            "interface": "WIFI",
-            "sourceID": 0,
-            "targetID": 28,
-            "body": {
-                "request_type": 0,
-                "logical_clock": 2,
-                "device_id": 2,
-                "data": {
-                    "type": 1,
-                    "old_state": 0,
-                    "new_state": 1
-                }
-            }
-        }
-    },
     { 
         "widget_type": "button",
         "label": "RPL1",
@@ -43,6 +18,31 @@
             "targetID": 28,
             "body": {
                 "request_type": 1,
+                "logical_clock": 2,
+                "device_id": 2,
+                "data": {
+                    "type": 1,
+                    "old_state": 0,
+                    "new_state": 1
+                }
+            }
+        }
+    },
+    {
+        "widget_type": "button",
+        "label": "REQ1",
+        "group": 1,
+        "slider": null,
+        "method": "POST",
+        "request":{
+            "id": "predef_request1",
+            "network": "WiFi1",
+            "network_type": 0,
+            "interface": "WIFI",
+            "sourceID": 0,
+            "targetID": 28,
+            "body": {
+                "request_type": 0,
                 "logical_clock": 2,
                 "device_id": 2,
                 "data": {

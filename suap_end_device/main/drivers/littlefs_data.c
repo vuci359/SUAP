@@ -32,6 +32,11 @@ void initialise_device_from_config_file(char *filename){
                // return;
         }
 
+    if (example_lvgl_lock(-1)) {
+        example_lvgl_demo_ui(encoder1i, encoder2i);
+            // Release the mutex
+         example_lvgl_unlock();
+    }
     ESP_LOGI(TAG, "Opening file");
     const cJSON *config;
 
@@ -73,13 +78,13 @@ void initialise_device_from_config_file(char *filename){
     for(int i = 0; i < request_count; i++){
         elem = cJSON_GetArrayItem(config, i);
         pom = cJSON_GetObjectItem(elem, "widget_type");
-        if (!cJSON_IsNumber(pom)){
+        if (!cJSON_IsString(pom)){
             ESP_LOGE(TAG, "widget_type nije string");
             return;
         }
         strcpy(widget_type, pom->valuestring);
         pom = cJSON_GetObjectItem(elem, "label");
-        if (!cJSON_IsNumber(pom)){
+        if (!cJSON_IsString(pom)){
             ESP_LOGE(TAG, "label nije string");
             return;
         }
@@ -95,19 +100,19 @@ void initialise_device_from_config_file(char *filename){
         if(!cJSON_IsNull(pom)){
             treba_slider = true;
             pom2 = cJSON_GetObjectItem(pom, "min");
-            if (!cJSON_IsNumber(pom)){
+            if (!cJSON_IsNumber(pom2)){
                 ESP_LOGE(TAG, "min nije broj");
                 return;
             }
             slider_min = pom2->valueint;
             pom2 = cJSON_GetObjectItem(pom, "max");
-            if (!cJSON_IsNumber(pom)){
+            if (!cJSON_IsNumber(pom2)){
                 ESP_LOGE(TAG, "max nije broj");
                 return;
             }
             slider_max = pom2->valueint;
             pom2 = cJSON_GetObjectItem(pom, "step");
-            if (!cJSON_IsNumber(pom)){
+            if (!cJSON_IsNumber(pom2)){
                 ESP_LOGE(TAG, "step nije broj");
                 return;
             }
@@ -126,20 +131,24 @@ void initialise_device_from_config_file(char *filename){
        // strcpy(req[i], cJSON_Print(pom)); //zahtjev treba kopirati i stringizvlačiti kod slanja..
        // printf("%s\n", req[i]); //ne pije vodu...
 
-        if(treba_slider){
-            add_button_without_slider(group, label, method);
+        if(!treba_slider){
+            if (example_lvgl_lock(-1)) {
+                add_button_without_slider(group, label, method);
+                // Release the mutex
+                example_lvgl_unlock();
+            }
         } else{
-            add_button_with_slider(group, label, method, slider_min, slider_max, slider_step);
+            if (example_lvgl_lock(-1)) {
+                add_button_with_slider(group, label, method, slider_min, slider_max, slider_step);
+                // Release the mutex
+                example_lvgl_unlock();
+            }
         }
 
     }
 
     //tu ide obrada JSON-a
 
-    if (example_lvgl_lock(-1)) {
-        example_lvgl_demo_ui(encoder1i, encoder2i);
-        // Release the mutex
-        example_lvgl_unlock();
-    } //ne bi trebalo utjecati na kopiju requesta
+     //ne bi trebalo utjecati na kopiju requesta
     cJSON_Delete(config);
 }

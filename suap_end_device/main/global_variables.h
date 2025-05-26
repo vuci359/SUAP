@@ -3,6 +3,7 @@
 
 #include "lvgl.h"
 #include "driver/gpio.h"
+#include <cJSON.h>
 
 static const char *TAG = "SUAP";
 static const char *TAGhttp = "HTTP";
@@ -63,9 +64,13 @@ extern lv_indev_t *encoder2i;
 
 extern lv_obj_t * list1;
 extern lv_obj_t * list2;
+extern lv_obj_t * list3;
+
 
 extern lv_obj_t * mbox1;
 extern lv_obj_t * mbox2;
+//extern lv_obj_t * mbox3;
+
 
 extern lv_group_t * g;
 extern lv_group_t * g2;

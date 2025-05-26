@@ -6,8 +6,16 @@
 #include "user_interface/user_interface.h"
 // This demo UI is adapted from LVGL official example: https://docs.lvgl.io/master/widgets/extra/meter.html#simple-meter
 
+//možda treba prebaciti u datoteku s programom
 lv_obj_t * list1;
 lv_obj_t * list2;
+lv_obj_t * list3;
+
+static uint8_t button_counter = 0;
+static lv_obj_t * count_label;
+lv_obj_t * mbox1;
+lv_group_t * g;
+lv_group_t * g2;
 
 static int extract_relevant_data(char *json){
 
@@ -46,13 +54,6 @@ static int extract_relevant_data(char *json){
     cJSON_Delete(json_data);
     return 0;
 }
-
-
-static uint8_t button_counter = 0;
-static lv_obj_t * count_label;
-lv_obj_t * mbox1;
-lv_group_t * g;
-lv_group_t * g2;
 
 static void mevent_cb(lv_event_t * e)
 {
@@ -182,61 +183,115 @@ void example_lvgl_demo_ui(lv_indev_t *encoder1i, lv_indev_t *encoder2i)
     list1 = lv_list_create(lv_scr_act());
     lv_obj_set_size(list1, lv_pct(60), lv_pct(100));
     lv_obj_set_style_pad_row(list1, 5, 0);
+    lv_obj_align(list1, LV_ALIGN_CENTER, -50, 20);
 
     list2 = lv_list_create(lv_scr_act());
     lv_obj_set_size(list2, lv_pct(60), lv_pct(100));
     lv_obj_set_style_pad_row(list2, 5, 0);
-
-    lv_obj_align(list1, LV_ALIGN_CENTER, -50, 20);
     lv_obj_align(list2, LV_ALIGN_CENTER, 50, 20);
 
+    list3 = lv_list_create(lv_scr_act());
+    lv_obj_set_size(list3, lv_pct(60), lv_pct(100));
+    lv_obj_set_style_pad_row(list3, 5, 0);
+    lv_obj_align(list3, LV_ALIGN_CENTER, 100, 20);
 
 
-  lv_obj_t * btn1 = lv_btn_create(list1);
-  lv_obj_add_event_cb(btn1, event_handler, LV_EVENT_ALL, NULL);
+    lv_obj_t * btn1 = lv_btn_create(list1);
+    lv_obj_add_event_cb(btn1, event_handler, LV_EVENT_ALL, NULL);
 
-  label = lv_label_create(btn1);
-  lv_label_set_text(label, "Button");
-  lv_obj_center(label);
+    label = lv_label_create(btn1);
+    lv_label_set_text(label, "Button");
+    lv_obj_center(label);
 
-  count_label = lv_label_create(lv_scr_act());
-  lv_obj_align(count_label, LV_ALIGN_CENTER, 0, -60);
-  lv_label_set_text(count_label, "Counts: 0");
+    count_label = lv_label_create(lv_scr_act());
+    lv_obj_align(count_label, LV_ALIGN_CENTER, 0, -60);
+    lv_label_set_text(count_label, "Counts: 0");
 
-  lv_obj_t * btn2 = lv_btn_create(list1);
-  lv_obj_add_event_cb(btn2, event_handler, LV_EVENT_ALL, NULL);
- // lv_obj_align(btn2, LV_ALIGN_CENTER, -50, 40);
-  lv_obj_add_flag(btn2, LV_OBJ_FLAG_CHECKABLE);
-  lv_obj_set_height(btn2, LV_SIZE_CONTENT);
+    lv_obj_t * btn2 = lv_btn_create(list1);
+    lv_obj_add_event_cb(btn2, event_handler, LV_EVENT_ALL, NULL);
+    // lv_obj_align(btn2, LV_ALIGN_CENTER, -50, 40);
+    lv_obj_add_flag(btn2, LV_OBJ_FLAG_CHECKABLE);
+    lv_obj_set_height(btn2, LV_SIZE_CONTENT);
 
-  label = lv_label_create(btn2);
-  lv_label_set_text(label, "Toggle");
-  lv_obj_center(label);
-  lv_group_add_obj(g, btn1);
-  lv_group_add_obj(g,btn2);
-  lv_indev_set_group(encoder1i, g);
+    label = lv_label_create(btn2);
+    lv_label_set_text(label, "Toggle");
+    lv_obj_center(label);
+    lv_group_add_obj(g, btn1);
+    lv_group_add_obj(g,btn2);
+    lv_indev_set_group(encoder1i, g);
 
 
-  lv_obj_t * btn1b = lv_btn_create(list2);
-  lv_obj_add_event_cb(btn1b, post_event_handler, LV_EVENT_ALL, NULL); //promjeniti u handler za HTTP POST
+    lv_obj_t * btn1b = lv_btn_create(list2);
+    lv_obj_add_event_cb(btn1b, post_event_handler, LV_EVENT_ALL, NULL); //promjeniti u handler za HTTP POST
 
-  label = lv_label_create(btn1b);
-  lv_label_set_text(label, "POST");
-  lv_obj_center(label);
+    label = lv_label_create(btn1b);
+    lv_label_set_text(label, "POST");
+    lv_obj_center(label);
 
-  lv_obj_t * btn2b = lv_btn_create(list2);
-  lv_obj_add_event_cb(btn2b, get_event_handler, LV_EVENT_ALL, NULL); //promjeniti u handler za HTTP GET
-  //lv_obj_align(btn2b, LV_ALIGN_CENTER, 50, 40);
+    lv_obj_t * btn2b = lv_btn_create(list2);
+    lv_obj_add_event_cb(btn2b, get_event_handler, LV_EVENT_ALL, NULL); //promjeniti u handler za HTTP GET
+    //lv_obj_align(btn2b, LV_ALIGN_CENTER, 50, 40);
 
-  label = lv_label_create(btn2b);
-  lv_label_set_text(label, "GET");
-  lv_obj_center(label);
+    label = lv_label_create(btn2b);
+    lv_label_set_text(label, "GET");
+    lv_obj_center(label);
 
-  lv_group_add_obj(g2, btn1b);
-  lv_group_add_obj(g2,btn2b);
-  lv_indev_set_group(encoder2i, g2);
-  
+    lv_group_add_obj(g2, btn1b);
+    lv_group_add_obj(g2,btn2b);
+    lv_indev_set_group(encoder2i, g2);
+
   }
 
 
-  lv_obj_get_child_id(list_btn);
+
+static void config_event_handler_without_slider(lv_event_t * e){
+  lv_event_code_t code = lv_event_get_code(e);
+    
+
+
+  if( (code == LV_EVENT_CLICKED) || (code ==  LV_EVENT_LONG_PRESSED_REPEAT) )
+  {
+    if ( code == LV_EVENT_CLICKED){
+      LV_LOG_USER("Click Event");
+      lv_obj_t * btn = lv_event_get_target(e);
+    int request_id = lv_obj_get_child_id(btn);
+      printf("Stisnut je gumb s indexom %d.\n", request_id); //korisno za izračunati eventualni pomak
+  }
+    else if( code == LV_EVENT_LONG_PRESSED_REPEAT )
+      LV_LOG_USER("Press and Hold Event");
+  }
+  else if(code == LV_EVENT_VALUE_CHANGED)
+  {
+    LV_LOG_USER("Toggle Event");
+  }
+}
+
+int add_button_without_slider(int group, char *label, char *method){
+  lv_obj_t * btn_cnf = lv_btn_create(list3);
+  lv_obj_t * btn_label;
+  btn_label = lv_label_create(btn_cnf);
+  lv_label_set_text(btn_label, label);
+  lv_obj_center(btn_label);
+  lv_obj_add_event_cb(btn_cnf, config_event_handler_without_slider, LV_EVENT_ALL, NULL); //promjeniti u handler za HTTP POST
+  if(group == 1){
+      lv_group_add_obj(g, btn_cnf);
+  } else if(group == 2){
+    lv_group_add_obj(g2, btn_cnf);
+}
+return 0;
+}
+
+int add_button_with_slider(int group, char *label, char *method, int min_value, int max_value, int step){
+  lv_obj_t * btn_cnf = lv_btn_create(list3);
+  lv_obj_t * btn_label;
+  btn_label = lv_label_create(btn_cnf);
+  lv_label_set_text(btn_label, label);
+  lv_obj_center(btn_label);
+  lv_obj_add_event_cb(btn_cnf, config_event_handler_without_slider, LV_EVENT_ALL, NULL); //promjeniti u handler za HTTP POST
+  if(group == 1){
+      lv_group_add_obj(g, btn_cnf);
+  } else if(group == 2){
+    lv_group_add_obj(g2, btn_cnf);
+}
+return 0;
+}
