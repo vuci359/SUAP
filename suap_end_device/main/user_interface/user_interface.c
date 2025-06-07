@@ -11,6 +11,8 @@ lv_obj_t * list1;
 lv_obj_t * list2;
 lv_obj_t * list3;
 
+int slider_value = 0;
+
 static lv_obj_t * slider_label;
 
 static uint8_t button_counter = 0;
@@ -255,11 +257,14 @@ static void user_event_cb(lv_event_t *e){
         if(postavke[request_id].has_slider){
           if(strcmp(postavke[request_id].method, "POST") == 0){
             post_rest_function(povrat, odgovor, BASE_URL"/Datagram/PushMessage", cJSON_Print(postavke[request_id].req));
+
           }
           else if(strcmp(postavke[request_id].method, "GET") == 0){
             get_rest_function(povrat, odgovor, BASE_URL"/Datagram/PushMessage", NULL);
           }
         }
+                    printf("Zahtjev %s\n", cJSON_Print(postavke[request_id].req));
+
         mbox1 = lv_msgbox_create(lv_layer_top(), "Primljeno", odgovor, NULL, true);
         lv_obj_add_event_cb(mbox1, delete_msgbox, LV_EVENT_VALUE_CHANGED, NULL);
         lv_obj_center(mbox1);
@@ -269,20 +274,14 @@ static void user_event_cb(lv_event_t *e){
 }
 
 
-static void slider_event_cb(lv_event_t * e)
-{
+static void slider_event_cb(lv_event_t * e){
     
     lv_obj_t * slider = lv_event_get_target(e);
     char buf[8];
     lv_snprintf(buf, sizeof(buf), "%ld", lv_slider_get_value(slider));
   //  lv_label_set_text(slider_label, buf);
    // lv_obj_align_to(slider_label, slider, LV_ALIGN_OUT_BOTTOM_MID, 0, 10);
-        int request_id = lv_obj_get_child_id(slider);
-
-
-   
-
-        //uništiti slider?
+    slider_value = lv_slider_get_value(slider);        
 
 }
 static void config_event_handler_with_slider(lv_event_t * e){
@@ -309,6 +308,7 @@ static void config_event_handler_with_slider(lv_event_t * e){
         lv_group_add_obj(g2, slider);
 
     lv_obj_center(slider);
+    lv_obj_set_width(slider, 200);
     lv_obj_add_event_cb(slider, slider_event_cb, LV_EVENT_VALUE_CHANGED, NULL);
     lv_slider_set_range(slider, postavke[request_id].min_value, postavke[request_id].max_value);
 
@@ -319,6 +319,8 @@ static void config_event_handler_with_slider(lv_event_t * e){
   lv_label_set_text(btn_label, "OK");
   lv_obj_center(btn_label);
   lv_group_add_obj(g2, btn_cnf);
+  lv_obj_add_event_cb(btn_cnf, user_event_cb, LV_EVENT_CLICKED, NULL);
+
 
   //lv_obj_add_event_cb(btn_cnf, user_event_cb, LV_EVENT_ALL, NULL);
     
