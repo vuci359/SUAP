@@ -98,8 +98,17 @@ extern end_device neighbours[100];
 extern int current_logical_clock;
 static const char *pars = "main request parser"; //nek si kompajler napravi zasebnu kopiju za svaku funkciju da me ne maltretira...
 
+typedef struct {
+    cJSON *req;
+    char method[10];
+    bool has_slider;
+    int min_value;
+    int max_value;
+    int step;
+} slider_data;
 
-extern cJSON *req[MAX_REQUEST_COUNT];
+
+extern slider_data postavke[MAX_REQUEST_COUNT];
 extern int request_count;
 
 #endif

@@ -1,7 +1,7 @@
 #include "drivers/littlefs_data.h"
 #include <cJSON.h>
 
-cJSON *req[MAX_REQUEST_COUNT];
+slider_data postavke[MAX_REQUEST_COUNT];
 int request_count = 0; //proj predefiniranih zahtjeva
 
 void initialise_device_from_config_file(char *filename){
@@ -64,7 +64,6 @@ void initialise_device_from_config_file(char *filename){
     int group = 0;
     bool treba_slider = false;
     int slider_min, slider_max, slider_step;
-    char method[10];
 
     if(config == NULL){
         ESP_LOGE(TAG, "root JSON je NULL");
@@ -124,22 +123,32 @@ void initialise_device_from_config_file(char *filename){
             ESP_LOGE(TAG, "method nije string");
             return;
         }
-        strcpy(method, pom->valuestring);
+        strcpy(postavke[i].method, pom->valuestring);
         pom = cJSON_GetObjectItem(elem, "request");
-        req[i] = malloc(sizeof(pom)); //alociranje memorije
-        memcpy(req[i], pom, sizeof(pom)); //spremanje duplikara requesta da se ne izgubi
+        //postavke[i].method = method;
+       // postavke[i].req =malloc(sizeof(pom)); //alociranje memorije
+        postavke[i].req = cJSON_Duplicate(pom, true);
+       // memcpy(postavke[i].req, pom, sizeof(pom)); //spremanje duplikara requesta da se ne izgubi
        // strcpy(req[i], cJSON_Print(pom)); //zahtjev treba kopirati i stringizvlačiti kod slanja..
        // printf("%s\n", req[i]); //ne pije vodu...
 
         if(!treba_slider){
             if (example_lvgl_lock(-1)) {
-                add_button_without_slider(group, label, method);
+                postavke[i].max_value = NULL; //ne koristi se
+                postavke[i].min_value = NULL;  //ne koristi se
+                postavke[i].step = NULL;  //ne koristi se
+                postavke[i].has_slider = false;
+                add_button_without_slider(group, label);
                 // Release the mutex
                 example_lvgl_unlock();
             }
         } else{
             if (example_lvgl_lock(-1)) {
-                add_button_with_slider(group, label, method, slider_min, slider_max, slider_step);
+                postavke[i].max_value = slider_max;
+                postavke[i].min_value = slider_min;
+                postavke[i].step = slider_step;
+                postavke[i].has_slider = true;
+                add_button_with_slider(group, label);
                 // Release the mutex
                 example_lvgl_unlock();
             }

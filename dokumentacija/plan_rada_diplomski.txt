@@ -47,7 +47,7 @@
 2.6.2025. - 8.6.2025.
     prepravci i popravci po potrebi
         prebacivanje konfiguracije na littlefs particiju
-9.9.2025. - 15.6.2025.
+9.6.2025. - 15.6.2025.
     prepravci i popravci po potrebi
 16.6.2025. - 22.6.2025.
     prepravci i popravci po potrebi

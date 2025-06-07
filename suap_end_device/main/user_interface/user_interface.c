@@ -11,9 +11,12 @@ lv_obj_t * list1;
 lv_obj_t * list2;
 lv_obj_t * list3;
 
+static lv_obj_t * slider_label;
+
 static uint8_t button_counter = 0;
 static lv_obj_t * count_label;
 lv_obj_t * mbox1;
+
 lv_group_t * g;
 lv_group_t * g2;
 
@@ -55,7 +58,7 @@ static int extract_relevant_data(char *json){
     return 0;
 }
 
-static void mevent_cb(lv_event_t * e)
+static void delete_msgbox(lv_event_t * e)
 {
     lv_obj_t * btn = lv_event_get_target(e);
     lv_obj_t * label = lv_obj_get_child(btn, 0);
@@ -115,7 +118,7 @@ static void get_event_handler(lv_event_t * e)
 
     printf("%d %d %f\n", zadnja_vrijednost, brojac, prosjek);
     mbox1 = lv_msgbox_create(lv_layer_top(), "Primljeno", odgovor, NULL, true);
-    lv_obj_add_event_cb(mbox1, mevent_cb, LV_EVENT_VALUE_CHANGED, NULL);
+    lv_obj_add_event_cb(mbox1, delete_msgbox, LV_EVENT_VALUE_CHANGED, NULL);
     lv_obj_center(mbox1);
       lv_group_add_obj(g2,mbox1);
       lv_group_add_obj(g2,lv_msgbox_get_close_btn(mbox1));
@@ -146,7 +149,7 @@ static void post_event_handler(lv_event_t * e)
      post_rest_function(podaci, odgovor, API_POST_URL, str);
 
     mbox1 = lv_msgbox_create(lv_layer_top(), "Poslano", odgovor, NULL, true);
-    lv_obj_add_event_cb(mbox1, mevent_cb, LV_EVENT_VALUE_CHANGED, NULL);
+    lv_obj_add_event_cb(mbox1, delete_msgbox, LV_EVENT_VALUE_CHANGED, NULL);
     lv_obj_center(mbox1);
       lv_group_add_obj(g2,mbox1);
       lv_group_add_obj(g2,lv_msgbox_get_close_btn(mbox1));
@@ -242,7 +245,95 @@ void example_lvgl_demo_ui(lv_indev_t *encoder1i, lv_indev_t *encoder2i)
 
   }
 
+static void user_event_cb(lv_event_t *e){
+   char *odgovor[25];
+    char *povrat[50];
+        lv_obj_t *btn = lv_event_get_target(e);
 
+        int request_id = lv_obj_get_child_id(btn);
+
+        if(postavke[request_id].has_slider){
+          if(strcmp(postavke[request_id].method, "POST") == 0){
+            post_rest_function(povrat, odgovor, BASE_URL"/Datagram/PushMessage", cJSON_Print(postavke[request_id].req));
+          }
+          else if(strcmp(postavke[request_id].method, "GET") == 0){
+            get_rest_function(povrat, odgovor, BASE_URL"/Datagram/PushMessage", NULL);
+          }
+        }
+        mbox1 = lv_msgbox_create(lv_layer_top(), "Primljeno", odgovor, NULL, true);
+        lv_obj_add_event_cb(mbox1, delete_msgbox, LV_EVENT_VALUE_CHANGED, NULL);
+        lv_obj_center(mbox1);
+        lv_group_add_obj(g2,mbox1);
+        lv_group_add_obj(g2,lv_msgbox_get_close_btn(mbox1));
+        lv_group_focus_obj(lv_msgbox_get_close_btn(mbox1));
+}
+
+
+static void slider_event_cb(lv_event_t * e)
+{
+    
+    lv_obj_t * slider = lv_event_get_target(e);
+    char buf[8];
+    lv_snprintf(buf, sizeof(buf), "%ld", lv_slider_get_value(slider));
+  //  lv_label_set_text(slider_label, buf);
+   // lv_obj_align_to(slider_label, slider, LV_ALIGN_OUT_BOTTOM_MID, 0, 10);
+        int request_id = lv_obj_get_child_id(slider);
+
+
+   
+
+        //uništiti slider?
+
+}
+static void config_event_handler_with_slider(lv_event_t * e){
+    lv_event_code_t code = lv_event_get_code(e);    
+  
+  
+    if( (code == LV_EVENT_CLICKED) || (code ==  LV_EVENT_LONG_PRESSED_REPEAT) )
+    {
+      if ( code == LV_EVENT_CLICKED){
+        LV_LOG_USER("Click Event");
+        lv_obj_t * btn = lv_event_get_target(e);
+      int request_id = lv_obj_get_child_id(btn);
+
+    mbox1 = lv_msgbox_create(lv_layer_top(), "Ulaz", NULL, NULL, true);
+    lv_obj_add_event_cb(mbox1, delete_msgbox, LV_EVENT_VALUE_CHANGED, NULL);
+    lv_obj_center(mbox1);
+    lv_group_add_obj(g2,mbox1);
+    lv_group_add_obj(g2,lv_msgbox_get_close_btn(mbox1));
+    lv_group_focus_obj(lv_msgbox_get_close_btn(mbox1));
+
+
+       /*Create a slider in the center of the display*/
+    lv_obj_t * slider = lv_slider_create(mbox1);
+        lv_group_add_obj(g2, slider);
+
+    lv_obj_center(slider);
+    lv_obj_add_event_cb(slider, slider_event_cb, LV_EVENT_VALUE_CHANGED, NULL);
+    lv_slider_set_range(slider, postavke[request_id].min_value, postavke[request_id].max_value);
+
+
+  lv_obj_t * btn_cnf = lv_btn_create(mbox1);
+  lv_obj_t * btn_label;
+  btn_label = lv_label_create(btn_cnf);
+  lv_label_set_text(btn_label, "OK");
+  lv_obj_center(btn_label);
+  lv_group_add_obj(g2, btn_cnf);
+
+  //lv_obj_add_event_cb(btn_cnf, user_event_cb, LV_EVENT_ALL, NULL);
+    
+      
+        printf("Stisnut je gumb slider indexom %d; metoda %s.\n", request_id, postavke[request_id].method); //korisno za izračunati eventualni pomak
+        //u verziji sa sliderom dodati msgbox i prikazati slider
+    }
+      else if( code == LV_EVENT_LONG_PRESSED_REPEAT )
+        LV_LOG_USER("Press and Hold Event");
+    }
+    else if(code == LV_EVENT_VALUE_CHANGED)
+    {
+      LV_LOG_USER("Toggle Event");
+    }
+  }
 
 static void config_event_handler_without_slider(lv_event_t * e){
   lv_event_code_t code = lv_event_get_code(e);
@@ -255,7 +346,29 @@ static void config_event_handler_without_slider(lv_event_t * e){
       LV_LOG_USER("Click Event");
       lv_obj_t * btn = lv_event_get_target(e);
     int request_id = lv_obj_get_child_id(btn);
-      printf("Stisnut je gumb s indexom %d.\n", request_id); //korisno za izračunati eventualni pomak
+
+
+    char *odgovor[25];
+    char *povrat[50];
+
+    if(!postavke[request_id].has_slider){
+      if(strcmp(postavke[request_id].method, "POST") == 0){
+        printf("%s\n", cJSON_Print(postavke[request_id].req));
+        post_rest_function(povrat, odgovor, BASE_URL"/Datagram/PushMessage", cJSON_Print(postavke[request_id].req));
+      }
+      else if(strcmp(postavke[request_id].method, "GET") == 0){
+        get_rest_function(povrat, odgovor, BASE_URL"/Datagram/PushMessage", NULL);
+      }
+    }
+    mbox1 = lv_msgbox_create(lv_layer_top(), "Primljeno", odgovor, NULL, true);
+    lv_obj_add_event_cb(mbox1, delete_msgbox, LV_EVENT_VALUE_CHANGED, NULL);
+    lv_obj_center(mbox1);
+    lv_group_add_obj(g2,mbox1);
+    lv_group_add_obj(g2,lv_msgbox_get_close_btn(mbox1));
+    lv_group_focus_obj(lv_msgbox_get_close_btn(mbox1));
+
+      printf("Stisnut je gumb s indexom %d; metoda %s.\n", request_id, postavke[request_id].method); //korisno za izračunati eventualni pomak
+      //u verziji sa sliderom dodati msgbox i prikazati slider
   }
     else if( code == LV_EVENT_LONG_PRESSED_REPEAT )
       LV_LOG_USER("Press and Hold Event");
@@ -266,13 +379,13 @@ static void config_event_handler_without_slider(lv_event_t * e){
   }
 }
 
-int add_button_without_slider(int group, char *label, char *method){
+int add_button_without_slider(int group, char *label){
   lv_obj_t * btn_cnf = lv_btn_create(list3);
   lv_obj_t * btn_label;
   btn_label = lv_label_create(btn_cnf);
   lv_label_set_text(btn_label, label);
   lv_obj_center(btn_label);
-  lv_obj_add_event_cb(btn_cnf, config_event_handler_without_slider, LV_EVENT_ALL, NULL); //promjeniti u handler za HTTP POST
+  lv_obj_add_event_cb(btn_cnf, config_event_handler_without_slider, LV_EVENT_ALL, NULL);
   if(group == 1){
       lv_group_add_obj(g, btn_cnf);
   } else if(group == 2){
@@ -281,13 +394,13 @@ int add_button_without_slider(int group, char *label, char *method){
 return 0;
 }
 
-int add_button_with_slider(int group, char *label, char *method, int min_value, int max_value, int step){
+int add_button_with_slider(int group, char *label){
   lv_obj_t * btn_cnf = lv_btn_create(list3);
   lv_obj_t * btn_label;
   btn_label = lv_label_create(btn_cnf);
   lv_label_set_text(btn_label, label);
   lv_obj_center(btn_label);
-  lv_obj_add_event_cb(btn_cnf, config_event_handler_without_slider, LV_EVENT_ALL, NULL); //promjeniti u handler za HTTP POST
+  lv_obj_add_event_cb(btn_cnf, config_event_handler_with_slider, LV_EVENT_ALL, NULL);
   if(group == 1){
       lv_group_add_obj(g, btn_cnf);
   } else if(group == 2){
