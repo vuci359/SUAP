@@ -252,7 +252,7 @@ static void user_event_cb(lv_event_t *e){
     char *povrat[50];
         lv_obj_t *btn = lv_event_get_target(e);
 
-        int request_id = lv_obj_get_child_id(btn);
+        int request_id = lv_obj_get_child_id(lv_obj_get_parent(btn));
 
         if(postavke[request_id].has_slider){
           if(strcmp(postavke[request_id].method, "POST") == 0){
@@ -262,8 +262,8 @@ static void user_event_cb(lv_event_t *e){
           else if(strcmp(postavke[request_id].method, "GET") == 0){
             get_rest_function(povrat, odgovor, BASE_URL"/Datagram/PushMessage", NULL);
           }
-        }
-                    printf("Zahtjev %s\n", cJSON_Print(postavke[request_id].req));
+        }           printf("Zahtjev ID %d\n", request_id);
+                //    printf("Zahtjev %s\n", cJSON_Print(postavke[request_id].req));
 
         mbox1 = lv_msgbox_create(lv_layer_top(), "Primljeno", odgovor, NULL, true);
         lv_obj_add_event_cb(mbox1, delete_msgbox, LV_EVENT_VALUE_CHANGED, NULL);
