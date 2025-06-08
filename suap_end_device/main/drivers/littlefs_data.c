@@ -132,6 +132,9 @@ void initialise_device_from_config_file(char *filename){
        // strcpy(req[i], cJSON_Print(pom)); //zahtjev treba kopirati i stringizvlačiti kod slanja..
        // printf("%s\n", req[i]); //ne pije vodu...
 
+        cJSON *pom = cJSON_GetObjectItem(postavke[i].req, "sourceID"); //dovršiti prepravljanje novog stanjas
+        cJSON_SetNumberValue(pom , my_ID);
+
         if(!treba_slider){
             if (example_lvgl_lock(-1)) {
                 postavke[i].max_value = NULL; //ne koristi se

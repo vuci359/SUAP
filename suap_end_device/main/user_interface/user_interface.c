@@ -251,8 +251,14 @@ static void user_event_cb(lv_event_t *e){
    char *odgovor[25];
     char *povrat[50];
         lv_obj_t *btn = lv_event_get_target(e);
-
         int request_id = lv_obj_get_child_id(lv_obj_get_parent(btn));
+
+
+        cJSON *pom = cJSON_GetObjectItem(postavke[request_id].req, "body"); //dovršiti prepravljanje novog stanjas
+        pom = cJSON_GetObjectItem(pom, "data");
+        pom = cJSON_GetObjectItem(pom, "new_state");
+
+        cJSON_SetNumberValue(pom , slider_value);
 
         if(postavke[request_id].has_slider){
           if(strcmp(postavke[request_id].method, "POST") == 0){
@@ -271,6 +277,15 @@ static void user_event_cb(lv_event_t *e){
         lv_group_add_obj(g2,mbox1);
         lv_group_add_obj(g2,lv_msgbox_get_close_btn(mbox1));
         lv_group_focus_obj(lv_msgbox_get_close_btn(mbox1));
+        mbox1 = lv_obj_get_parent(btn);
+        if (example_lvgl_lock(-1)) {
+
+          lv_obj_del(mbox1);
+
+        // Release the mutex
+          example_lvgl_unlock();
+        }
+
 }
 
 
