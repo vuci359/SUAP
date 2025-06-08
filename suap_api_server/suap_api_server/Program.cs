@@ -1,8 +1,20 @@
+//using Newtonsoft.Json;
+//using suap_api_server.Converters;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddControllersWithViews();
+//builder.Services.AddMvcCore().AddNewtonsoftJson();
+builder.Services.AddControllersWithViews().AddJsonOptions(options => {
+        options.AllowInputFormatterExceptionMessages = true;
+        //options.JsonSerializerOptions.Converters.Add(new PolymorphicDatagramConverter());
+    });
+
 builder.Services.AddSwaggerGen();
+
+
+//config.Formatters.JsonFormatter.SerializerSettings.Converters.Add(new PolymorphicDatagramConverter());
+
 
 var app = builder.Build();
 

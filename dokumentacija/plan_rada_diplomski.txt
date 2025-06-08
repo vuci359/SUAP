@@ -1,25 +1,27 @@
 3.3.2025. - 9.3.2025.
-    preuzimanje zadatka i inicijalni dogovor
+    preuzimanje zadatka i inicijalni dogovor   GOTOVO
 10.3.2025. - 16.3.2025.
-    sastanak
-    predaja plana rada
-    početak refaktoriranja početnog progranskog koda
+    sastanak            GOTOVO
+    predaja plana rada GOTOVO
+    početak refaktoriranja početnog progranskog koda GOTOVO
     detaljna skica podataka za razmjenu    GOTOVO
     detaljna skica parsera za interpretaciju zahtjeva zadanih u JSON formatu  GOTOVO
 17.3.2025. - 23.3.2025.
-    završavanje refaktoriranja programskog koda krajnjeg čvora
+    završavanje refaktoriranja programskog koda krajnjeg čvora      GOTOVO
     prilagodba grafičkog sučelja za automatsko stvaranje gumba    ODGOĐENO
 24.3.2025. - 30.3.2025.
-    stvaranje podrške za rad s vanjskom memorijom
+    stvaranje podrške za rad s vanjskom memorijom             -> nema pinova za spajanje SD kartice
     stvaranje parsera za obradu unaprijed spremljenih zahtjeva ->potprogrami
     prilagodba backenda za dodatnu funkcionalnost
 31.3.2025. - 6.4.2025.
     testiranje funkcionalnosti
     nastavak prilagodbe backenda
-    stvaranje parsera za intrepretaciju različitih vrsta primljenih podataka
+    stvaranje parsera za intrepretaciju različitih vrsta primljenih podataka   U TIJEKU
 7.4.2025. - 13.4.2025.
     stvaranje liste čekanja za zahtjeve s poslužitelja koja se periodički provjerava -> izbjegavanje poslužitelja na krajnjem čvoru zbog memorije
-    problem rada s podacima -> kako prikazati na ekraniu?
+    problem rada s podacima -> kako prikazati na ekraniu?  ->poruka za korisnika s upitom?
+    senzor - snaga signala na WiFiju?
+    aktuator - pozadinsko osvjetljenje?
 14.4.2025. - 20.4.2025.
     dorada grafičkog sučelja
 21.4.2025. - 27.4.2025.
@@ -28,9 +30,14 @@
 28.4.2025. - 4.5.2025.
     završavanje programskog koda
     optimizacije programskog koda ovisno o vremenu i mogućnostima
+        zahtjevi moraju biti nakucani u JSON konfiguraciju u kojoj s uopisane akcije i gumbi
+        odvojiti konfiguraciju za nrežu u drugi config file
+        iskoristiti metapodatke o susjedima za provjeru dali je ciljani čvor živ
 5.5.2025. - 11.5.2025.
     testiranje sustava
     pisanje dokumentacije
+    API poslužitelj je broker za zahtjeve - možda bi bilo bolje koristiti mqtt ili Kafku?
+    treba definiraty parsiranje reply na krajnjem čvoru
 12.5.2025. - 18.5.2025.
     pisanje dokumentacije
 19.5.2025. - 25.5.2025.
@@ -39,7 +46,8 @@
     planirano završavanje diplomskog rada
 2.6.2025. - 8.6.2025.
     prepravci i popravci po potrebi
-9.9.2025. - 15.6.2025.
+        prebacivanje konfiguracije na littlefs particiju
+9.6.2025. - 15.6.2025.
     prepravci i popravci po potrebi
 16.6.2025. - 22.6.2025.
     prepravci i popravci po potrebi

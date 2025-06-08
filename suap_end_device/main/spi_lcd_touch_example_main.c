@@ -18,6 +18,8 @@
 #include "driver/spi_master.h"
 #include "esp_err.h"
 
+#include "drivers/littlefs_data.h"
+
 #define LOG_LOCAL_LEVEL ESP_LOG_VERBOSE
 #include "esp_log.h"
 #include "nvs_flash.h"
@@ -30,71 +32,19 @@
 #include "lvgl.h"
 #include "stdbool.h"
 #include "drivers/encoder.h"
+#include "drivers/display.h"
+#include "tasks/tasks.h"
 
-#if CONFIG_EXAMPLE_LCD_CONTROLLER_ILI9341
-#include "esp_lcd_ili9341.h"
-#elif CONFIG_EXAMPLE_LCD_CONTROLLER_GC9A01
-#include "esp_lcd_gc9a01.h"
-#endif
+#include "global_variables.h"
 
-#if CONFIG_EXAMPLE_LCD_TOUCH_CONTROLLER_STMPE610
-#include "esp_lcd_touch_stmpe610.h"
-#endif
 
-static const char *TAG = "example";
+lv_disp_t *disp;
+lv_obj_t * mbox2;
 
-// Using SPI2 in the example
-#define LCD_HOST  SPI2_HOST
+lv_indev_t *encoder1i;
+lv_indev_t *encoder2i;
 
-//ENCODER !
-#define EXAMPLE_ENCODER1_CLK            17
-#define EXAMPLE_ENCODER1_DT             13
-#define EXAMPLE_ENCODER1_BTN            22
-//ENCODER 2
-#define EXAMPLE_ENCODER2_CLK            38
-#define EXAMPLE_ENCODER2_DT             37
-#define EXAMPLE_ENCODER2_BTN            32
 
-#define ENCODER_MAX_WHATCHPIONT_COINT 100
-
-#define EXAMPLE_PCNT_HIGH_LIMIT 100
-#define EXAMPLE_PCNT_LOW_LIMIT  -100
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////// Please update the following configuration according to your LCD spec //////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#define EXAMPLE_LCD_PIXEL_CLOCK_HZ     (20 * 1000 * 1000)
-#define EXAMPLE_LCD_BK_LIGHT_ON_LEVEL  1
-#define EXAMPLE_LCD_BK_LIGHT_OFF_LEVEL !EXAMPLE_LCD_BK_LIGHT_ON_LEVEL
-#define EXAMPLE_PIN_NUM_SCLK           18
-#define EXAMPLE_PIN_NUM_MOSI           19
-#define EXAMPLE_PIN_NUM_MISO           21
-#define EXAMPLE_PIN_NUM_LCD_DC         16
-#define EXAMPLE_PIN_NUM_LCD_RST        23
-#define EXAMPLE_PIN_NUM_LCD_CS         5
-#define EXAMPLE_PIN_NUM_BK_LIGHT       4
-#define EXAMPLE_PIN_NUM_TOUCH_CS       15
-
-// The pixel number in horizontal and vertical
-#if CONFIG_EXAMPLE_LCD_CONTROLLER_ILI9341
-#define EXAMPLE_LCD_H_RES              240
-#define EXAMPLE_LCD_V_RES              135
-#define EXAMPLE_LCD_Y_OFFSET           52
-#define EXAMPLE_LCD_X_OFFSET           40
-#elif CONFIG_EXAMPLE_LCD_CONTROLLER_GC9A01
-#define EXAMPLE_LCD_H_RES              240
-#define EXAMPLE_LCD_V_RES              240
-#endif
-// Bit number used to represent command and parameter
-#define EXAMPLE_LCD_CMD_BITS           8
-#define EXAMPLE_LCD_PARAM_BITS         8
-
-#define EXAMPLE_LVGL_TICK_PERIOD_MS    2
-#define EXAMPLE_LVGL_TASK_MAX_DELAY_MS 500
-#define EXAMPLE_LVGL_TASK_MIN_DELAY_MS 1
-#define EXAMPLE_LVGL_TASK_STACK_SIZE   (4 * 1024)
-#define EXAMPLE_LVGL_TASK_PRIORITY     2
-
-static SemaphoreHandle_t lvgl_mux = NULL;
 //strukture podataka i funkcije za enkoder
 typedef struct
 {
@@ -113,136 +63,7 @@ static void main_encoder_cb(uint32_t knobPosition){
 esp_lcd_touch_handle_t tp = NULL;
 #endif
 
-extern void example_lvgl_demo_ui(lv_disp_t *disp, lv_indev_t *encoder1, lv_indev_t *encoder2);
-
-static bool example_notify_lvgl_flush_ready(esp_lcd_panel_io_handle_t panel_io, esp_lcd_panel_io_event_data_t *edata, void *user_ctx)
-{
-    lv_disp_drv_t *disp_driver = (lv_disp_drv_t *)user_ctx;
-    lv_disp_flush_ready(disp_driver);
-    return false;
-}
-
-static void example_lvgl_flush_cb(lv_disp_drv_t *drv, const lv_area_t *area, lv_color_t *color_map)
-{
-    esp_lcd_panel_handle_t panel_handle = (esp_lcd_panel_handle_t) drv->user_data;
-    int offsetx1 = area->x1;
-    int offsetx2 = area->x2;
-    int offsety1 = area->y1;
-    int offsety2 = area->y2;
-    // copy a buffer's content to a specific area of the display
-    esp_lcd_panel_draw_bitmap(panel_handle, offsetx1, offsety1, offsetx2 + 1, offsety2 + 1, color_map);
-}
-
-/* Rotate display and touch, when rotated screen in LVGL. Called when driver parameters are updated. */
-static void example_lvgl_port_update_callback(lv_disp_drv_t *drv)
-{
-    esp_lcd_panel_handle_t panel_handle = (esp_lcd_panel_handle_t) drv->user_data;
-
-    switch (drv->rotated) {
-    case LV_DISP_ROT_NONE:
-        // Rotate LCD display
-        esp_lcd_panel_swap_xy(panel_handle, false);
-        esp_lcd_panel_mirror(panel_handle, true, false);
-#if CONFIG_EXAMPLE_LCD_TOUCH_ENABLED
-        // Rotate LCD touch
-        esp_lcd_touch_set_mirror_y(tp, false);
-        esp_lcd_touch_set_mirror_x(tp, false);
-#endif
-        break;
-    case LV_DISP_ROT_90:
-        // Rotate LCD display
-        esp_lcd_panel_swap_xy(panel_handle, true);
-        esp_lcd_panel_mirror(panel_handle, true, true);
-#if CONFIG_EXAMPLE_LCD_TOUCH_ENABLED
-        // Rotate LCD touch
-        esp_lcd_touch_set_mirror_y(tp, false);
-        esp_lcd_touch_set_mirror_x(tp, false);
-#endif
-        break;
-    case LV_DISP_ROT_180:
-        // Rotate LCD display
-        esp_lcd_panel_swap_xy(panel_handle, false);
-        esp_lcd_panel_mirror(panel_handle, false, true);
-#if CONFIG_EXAMPLE_LCD_TOUCH_ENABLED
-        // Rotate LCD touch
-        esp_lcd_touch_set_mirror_y(tp, false);
-        esp_lcd_touch_set_mirror_x(tp, false);
-#endif
-        break;
-    case LV_DISP_ROT_270:
-        // Rotate LCD display
-        esp_lcd_panel_swap_xy(panel_handle, true);
-        esp_lcd_panel_mirror(panel_handle, false, false);
-#if CONFIG_EXAMPLE_LCD_TOUCH_ENABLED
-        // Rotate LCD touch
-        esp_lcd_touch_set_mirror_y(tp, false);
-        esp_lcd_touch_set_mirror_x(tp, false);
-#endif
-        break;
-    }
-}
-
-#if CONFIG_EXAMPLE_LCD_TOUCH_ENABLED
-static void example_lvgl_touch_cb(lv_indev_drv_t * drv, lv_indev_data_t * data)
-{
-    uint16_t touchpad_x[1] = {0};
-    uint16_t touchpad_y[1] = {0};
-    uint8_t touchpad_cnt = 0;
-
-    /* Read touch controller data */
-    esp_lcd_touch_read_data(drv->user_data);
-
-    /* Get coordinates */
-    bool touchpad_pressed = esp_lcd_touch_get_coordinates(drv->user_data, touchpad_x, touchpad_y, NULL, &touchpad_cnt, 1);
-
-    if (touchpad_pressed && touchpad_cnt > 0) {
-        data->point.x = touchpad_x[0];
-        data->point.y = touchpad_y[0];
-        data->state = LV_INDEV_STATE_PRESSED;
-    } else {
-        data->state = LV_INDEV_STATE_RELEASED;
-    }
-}
-#endif
-
-static void example_increase_lvgl_tick(void *arg)
-{
-    /* Tell LVGL how many milliseconds has elapsed */
-    lv_tick_inc(EXAMPLE_LVGL_TICK_PERIOD_MS);
-}
-
-bool example_lvgl_lock(int timeout_ms)
-{
-    // Convert timeout in milliseconds to FreeRTOS ticks
-    // If `timeout_ms` is set to -1, the program will block until the condition is met
-    const TickType_t timeout_ticks = (timeout_ms == -1) ? portMAX_DELAY : pdMS_TO_TICKS(timeout_ms);
-    return xSemaphoreTakeRecursive(lvgl_mux, timeout_ticks) == pdTRUE;
-}
-
-void example_lvgl_unlock(void)
-{
-    xSemaphoreGiveRecursive(lvgl_mux);
-}
-
-static void example_lvgl_port_task(void *arg)
-{
-    ESP_LOGI(TAG, "Starting LVGL task");
-    uint32_t task_delay_ms = EXAMPLE_LVGL_TASK_MAX_DELAY_MS;
-    while (1) {
-        // Lock the mutex due to the LVGL APIs are not thread-safe
-        if (example_lvgl_lock(-1)) {
-            task_delay_ms = lv_timer_handler();
-            // Release the mutex
-            example_lvgl_unlock();
-        }
-        if (task_delay_ms > EXAMPLE_LVGL_TASK_MAX_DELAY_MS) {
-            task_delay_ms = EXAMPLE_LVGL_TASK_MAX_DELAY_MS;
-        } else if (task_delay_ms < EXAMPLE_LVGL_TASK_MIN_DELAY_MS) {
-            task_delay_ms = EXAMPLE_LVGL_TASK_MIN_DELAY_MS;
-        }
-        vTaskDelay(pdMS_TO_TICKS(task_delay_ms));
-    }
-}
+int current_logical_clock = 0;
 
 
 void app_main(void)
@@ -356,7 +177,7 @@ void app_main(void)
     disp_drv.drv_update_cb = example_lvgl_port_update_callback;
     disp_drv.draw_buf = &disp_buf;
     disp_drv.user_data = panel_handle;
-    lv_disp_t *disp = lv_disp_drv_register(&disp_drv);
+    disp = lv_disp_drv_register(&disp_drv);
 
     ESP_LOGI(TAG, "Install LVGL tick timer");
     // Tick interface for LVGL (using esp_timer to generate 2ms periodic event)
@@ -397,13 +218,20 @@ void app_main(void)
     encoder1d.read_cb = encoder1_read;
     encoder2d.type = LV_INDEV_TYPE_ENCODER;
     encoder2d.read_cb = encoder2_read;
-    lv_indev_t *encoder1i = lv_indev_drv_register(&encoder1d);
-    lv_indev_t *encoder2i = lv_indev_drv_register(&encoder2d);
+    encoder1i = lv_indev_drv_register(&encoder1d);
+    encoder2i = lv_indev_drv_register(&encoder2d);
 
     lvgl_mux = xSemaphoreCreateRecursiveMutex();
     assert(lvgl_mux);
+
+
+
     ESP_LOGI(TAG, "Create LVGL task");
+
+
     xTaskCreate(example_lvgl_port_task, "LVGL", EXAMPLE_LVGL_TASK_STACK_SIZE, NULL, EXAMPLE_LVGL_TASK_PRIORITY, NULL);
+
+
 
 
     ESP_ERROR_CHECK(nvs_flash_init());
@@ -411,13 +239,23 @@ void app_main(void)
     ESP_ERROR_CHECK(esp_event_loop_create_default());
     ESP_ERROR_CHECK(example_connect());
 
-    ESP_LOGI(TAG, "Display LVGL Meter Widget");
+
+
+    ESP_LOGI(TAG, "Register device");
+    int err = register_end_device();
+    ESP_LOGI(TAG, "Register function ended with status %d", err);
+    xTaskCreate(find_neighbours, "Neighbours", 8192, NULL, EXAMPLE_LVGL_TASK_PRIORITY, NULL);
+
+    initialise_device_from_config_file("/littlefs/interface_config.json");
+
+    xTaskCreate(get_messages, "MEssages", 8192*2, NULL, EXAMPLE_LVGL_TASK_PRIORITY, NULL);
+
+
+
+
+ //   ESP_LOGI(TAG, "Display LVGL Meter Widget");
     // Lock the mutex due to the LVGL APIs are not thread-safe
-    if (example_lvgl_lock(-1)) {
-        example_lvgl_demo_ui(disp, encoder1i, encoder2i);
-        // Release the mutex
-        example_lvgl_unlock();
-    }
+    
 
 }
  
