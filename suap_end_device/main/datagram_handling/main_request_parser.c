@@ -125,6 +125,8 @@ int parse_request(char *request){
             return err; //kasnije složiti slanje greške...
            }
         err = set_actuator_state(&device_id, &new_state);
+        err = get_actuator_state(&device_id, &new_state); //kontrolno čitanje
+
         if(err != 0){
             if(main_request != NULL){
                 cJSON_Delete(main_request);
