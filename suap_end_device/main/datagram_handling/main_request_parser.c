@@ -278,7 +278,7 @@ static void mevent_cb(lv_event_t * e)
 
 int display_message_to_user(char *message, bool *input_required, int *answer){
     pom_answr = *answer;
-        static const char *btn_ids[8] = {"0","1","2","3"};
+        static const char *btn_ids[4] = {"0","1","2","3"};
 
    // printf("radim msgbox");
     while(1){ //čekam mutex
