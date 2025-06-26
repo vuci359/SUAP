@@ -1,0 +1,8 @@
+@startuml
+class SensorData {
+    + SensorData()
+    + measurement : int <<get>> <<set>>
+    + unit : string <<get>> <<set>>
+}
+BodyData <|-- SensorData
+@enduml

@@ -1,0 +1,9 @@
+@startuml
+class DatagramBody {
+    + DatagramBody()
+    + request_type : int <<get>> <<set>>
+    + logical_clock : int <<get>> <<set>>
+    + device_id : int <<get>> <<set>>
+    + data : BodyData? <<get>> <<set>>
+}
+@enduml

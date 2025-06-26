@@ -1,0 +1,10 @@
+@startuml
+class RegistrationController {
+    - {static} _nodes : List<EndDevice>
+    - {static} rnd : Random
+    + RegistrationController()
+    + Register(node:EndDevice) : IActionResult
+    + GetPeers() : IActionResult
+}
+ControllerBase <|-- RegistrationController
+@enduml

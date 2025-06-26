@@ -1,0 +1,23 @@
+@startuml
+!include ././Program.puml
+!include ./Controllers/SuapApiController.puml
+!include ./Controllers/DatagramController.puml
+!include ./Controllers/RegistrationController.puml
+!include ./Models/ErrorViewModel.puml
+!include ./Models/Data/RecentData.puml
+!include ./Models/Datagrams/ActuatorData.puml
+!include ./Models/Datagrams/BodyData.puml
+!include ./Models/Datagrams/DatagramBody.puml
+!include ./Models/Datagrams/MainDatagram.puml
+!include ./Models/Datagrams/SensorData.puml
+!include ./Models/Datagrams/UserData.puml
+!include ./Models/Devices/Device.puml
+!include ./Models/Devices/EndDevice.puml
+!include ./obj/Debug/net7.0/suap_api_server.GlobalUsings.g.puml
+!include ./obj/Debug/net7.0/.NETCoreApp,Version=v7.0.AssemblyAttributes.puml
+!include ./obj/Debug/net7.0/suap_api_server.AssemblyInfo.puml
+!include ./obj/Debug/net9.0/suap_api_server.GlobalUsings.g.puml
+!include ./obj/Debug/net9.0/.NETCoreApp,Version=v9.0.AssemblyAttributes.puml
+!include ./obj/Debug/net9.0/suap_api_server.MvcApplicationPartsAssemblyInfo.puml
+!include ./obj/Debug/net9.0/suap_api_server.AssemblyInfo.puml
+@enduml

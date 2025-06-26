@@ -1,0 +1,9 @@
+@startuml
+class EndDevice {
+    + EndDevice()
+    + ID : int <<get>> <<set>>
+    + IP : string <<get>> <<set>>
+    + MAC : string <<get>> <<set>>
+    + devices : List<Device> <<get>> <<set>>
+}
+@enduml

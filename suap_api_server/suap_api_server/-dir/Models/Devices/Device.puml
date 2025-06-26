@@ -1,0 +1,7 @@
+@startuml
+class Device {
+    + Device()
+    + device_type : int <<get>> <<set>>
+    + device_id : int <<get>> <<set>>
+}
+@enduml

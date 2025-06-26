@@ -1,0 +1,10 @@
+@startuml
+class DatagramController {
+    - {static} _message_queue : Dictionary<int,Queue<MainDatagram>>
+    + DatagramController()
+    + PushMessage(json_data:MainDatagram) : IActionResult
+    + PopMessage(deviceID:int) : IActionResult
+    + MessageCount(deviceID:int) : IActionResult
+}
+ControllerBase <|-- DatagramController
+@enduml

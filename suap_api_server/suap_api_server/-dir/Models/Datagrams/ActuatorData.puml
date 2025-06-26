@@ -1,0 +1,8 @@
+@startuml
+class ActuatorData {
+    + ActuatorData()
+    + old_state : int <<get>> <<set>>
+    + new_state : int <<get>> <<set>>
+}
+BodyData <|-- ActuatorData
+@enduml

@@ -1,0 +1,12 @@
+@startuml
+class MainDatagram {
+    + MainDatagram()
+    + ID : string <<get>> <<set>>
+    + network : string <<get>> <<set>>
+    + network_type : int <<get>> <<set>>
+    + _interface : string <<get>> <<set>>
+    + sourceID : int <<get>> <<set>>
+    + targetID : int <<get>> <<set>>
+    + body : DatagramBody <<get>> <<set>>
+}
+@enduml

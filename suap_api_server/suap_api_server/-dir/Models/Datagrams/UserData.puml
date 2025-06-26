@@ -1,0 +1,9 @@
+@startuml
+class UserData {
+    + UserData()
+    + message : string <<get>> <<set>>
+    + input_required : bool <<get>> <<set>>
+    + user_input : int <<get>> <<set>>
+}
+BodyData <|-- UserData
+@enduml
