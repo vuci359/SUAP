@@ -22,6 +22,7 @@ lv_obj_t * mbox1;
 lv_group_t * g;
 lv_group_t * g2;
 
+
 static int extract_relevant_data(char *json){
 
     const cJSON *content_nodes = NULL;
@@ -186,27 +187,34 @@ void example_lvgl_demo_ui(lv_indev_t *encoder1i, lv_indev_t *encoder2i)
     lv_obj_t * sub_page = lv_menu_page_create(menu, NULL);
 
     list1 = lv_list_create(lv_scr_act());
-    lv_obj_set_size(list1, lv_pct(60), lv_pct(100));
+    lv_obj_set_size(list1, lv_pct(50), lv_pct(100));
     lv_obj_set_style_pad_row(list1, 5, 0);
-    lv_obj_align(list1, LV_ALIGN_CENTER, -50, 20);
+    lv_obj_align(list1, LV_ALIGN_CENTER, -60, 20);
 
     list2 = lv_list_create(lv_scr_act());
-    lv_obj_set_size(list2, lv_pct(60), lv_pct(100));
+    lv_obj_set_size(list2, lv_pct(50), lv_pct(100));
     lv_obj_set_style_pad_row(list2, 5, 0);
-    lv_obj_align(list2, LV_ALIGN_CENTER, 50, 20);
+    lv_obj_align(list2, LV_ALIGN_CENTER, 15, 20);
 
     list3 = lv_list_create(lv_scr_act());
-    lv_obj_set_size(list3, lv_pct(60), lv_pct(100));
+    lv_obj_set_size(list3, lv_pct(50), lv_pct(100));
     lv_obj_set_style_pad_row(list3, 5, 0);
-    lv_obj_align(list3, LV_ALIGN_CENTER, 100, 20);
+    lv_obj_align(list3, LV_ALIGN_CENTER, 85, 20);
+
 
 
     lv_obj_t * btn1 = lv_btn_create(list1);
     lv_obj_add_event_cb(btn1, event_handler, LV_EVENT_ALL, NULL);
+    lv_obj_set_width(btn1, 55);
+
+
 
     label = lv_label_create(btn1);
+     //   lv_obj_set_style_text_font(label, LV_FONT_MONTSERRAT_40, 0);
+
     lv_label_set_text(label, "Button");
     lv_obj_center(label);
+
 
     count_label = lv_label_create(lv_scr_act());
     lv_obj_align(count_label, LV_ALIGN_CENTER, 0, -60);
@@ -217,6 +225,8 @@ void example_lvgl_demo_ui(lv_indev_t *encoder1i, lv_indev_t *encoder2i)
     // lv_obj_align(btn2, LV_ALIGN_CENTER, -50, 40);
     lv_obj_add_flag(btn2, LV_OBJ_FLAG_CHECKABLE);
     lv_obj_set_height(btn2, LV_SIZE_CONTENT);
+    lv_obj_set_width(btn2, 55);
+
 
     label = lv_label_create(btn2);
     lv_label_set_text(label, "Toggle");
@@ -227,6 +237,7 @@ void example_lvgl_demo_ui(lv_indev_t *encoder1i, lv_indev_t *encoder2i)
 
 
     lv_obj_t * btn1b = lv_btn_create(list2);
+    lv_obj_set_width(btn1b, 55);
     lv_obj_add_event_cb(btn1b, post_event_handler, LV_EVENT_ALL, NULL); //promjeniti u handler za HTTP POST
 
     label = lv_label_create(btn1b);
@@ -234,6 +245,7 @@ void example_lvgl_demo_ui(lv_indev_t *encoder1i, lv_indev_t *encoder2i)
     lv_obj_center(label);
 
     lv_obj_t * btn2b = lv_btn_create(list2);
+    lv_obj_set_width(btn2b, 55);
     lv_obj_add_event_cb(btn2b, get_event_handler, LV_EVENT_ALL, NULL); //promjeniti u handler za HTTP GET
     //lv_obj_align(btn2b, LV_ALIGN_CENTER, 50, 40);
 
@@ -293,9 +305,9 @@ static void slider_event_cb(lv_event_t * e){
     
     lv_obj_t * slider = lv_event_get_target(e);
     char buf[8];
-    lv_snprintf(buf, sizeof(buf), "%ld", lv_slider_get_value(slider));
-  //  lv_label_set_text(slider_label, buf);
-   // lv_obj_align_to(slider_label, slider, LV_ALIGN_OUT_BOTTOM_MID, 0, 10);
+    lv_snprintf(buf, sizeof(buf), "%d", (int)lv_slider_get_value(slider));
+    lv_label_set_text(slider_label, buf);
+    lv_obj_align_to(slider_label, slider, LV_ALIGN_OUT_RIGHT_MID, 0, 0);
     slider_value = lv_slider_get_value(slider);        
 
 }
@@ -323,9 +335,13 @@ static void config_event_handler_with_slider(lv_event_t * e){
         lv_group_add_obj(g2, slider);
 
     lv_obj_center(slider);
-    lv_obj_set_width(slider, 200);
+    lv_obj_set_width(slider, 150);
     lv_obj_add_event_cb(slider, slider_event_cb, LV_EVENT_VALUE_CHANGED, NULL);
     lv_slider_set_range(slider, postavke[request_id].min_value, postavke[request_id].max_value);
+    slider_label = lv_label_create(mbox1);
+    lv_label_set_text(slider_label, "0");
+
+    lv_obj_align_to(slider_label, slider, LV_ALIGN_OUT_RIGHT_MID, 0, 0);
 
 
   lv_obj_t * btn_cnf = lv_btn_create(mbox1);
