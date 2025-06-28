@@ -1,0 +1,19 @@
+digraph  {
+rankdir="LR"
+{"/home/majmun/Dokumenti/FER/projekt/SUAP/suap_end_device/main/spi_lcd_touch_example_main.c#app_main(void)@68:0"[label="app_main(void)", ]} -> {"/home/majmun/esp/v5.3.1/esp-idf/components/freertos/FreeRTOS-Kernel/portable/linux/port_idf.c#main_task(void * args)@44:0"[label="main_task(void * args)", ] "/home/majmun/esp/v5.3.1/esp-idf/components/freertos/app_startup.c#main_task(void * args)@157:0"[label="main_task(void * args)", ] "/home/majmun/esp/v5.3.1/esp-idf/components/freertos/FreeRTOS-Kernel-SMP/portable/linux/port.c#main_task(void * args)@638:0"[label="main_task(void * args)", ]}
+"/home/majmun/esp/v5.3.1/esp-idf/components/freertos/FreeRTOS-Kernel/portable/linux/port_idf.c#main_task(void * args)@44:0"[label="main_task(void * args)", ]
+"/home/majmun/esp/v5.3.1/esp-idf/components/freertos/app_startup.c#main_task(void * args)@157:0"[label="main_task(void * args)", ]
+"/home/majmun/esp/v5.3.1/esp-idf/components/freertos/FreeRTOS-Kernel-SMP/portable/linux/port.c#main_task(void * args)@638:0"[label="main_task(void * args)", ]
+subgraph "cluster_/home/majmun/Dokumenti/FER/projekt/SUAP/suap_end_device/main/spi_lcd_touch_example_main.c" {
+label="${workspace}/main/spi_lcd_touch_example_main.c"
+"/home/majmun/Dokumenti/FER/projekt/SUAP/suap_end_device/main/spi_lcd_touch_example_main.c#app_main(void)@68:0" }
+subgraph "cluster_/home/majmun/esp/v5.3.1/esp-idf/components/freertos/FreeRTOS-Kernel/portable/linux/port_idf.c" {
+label="/home/majmun/esp/v5.3.1/esp-idf/components/freertos/FreeRTOS-Kernel/portable/linux/port_idf.c"
+"/home/majmun/esp/v5.3.1/esp-idf/components/freertos/FreeRTOS-Kernel/portable/linux/port_idf.c#main_task(void * args)@44:0" "/home/majmun/esp/v5.3.1/esp-idf/components/freertos/FreeRTOS-Kernel/portable/linux/port_idf.c#main_task(void * args)@44:0" }
+subgraph "cluster_/home/majmun/esp/v5.3.1/esp-idf/components/freertos/app_startup.c" {
+label="/home/majmun/esp/v5.3.1/esp-idf/components/freertos/app_startup.c"
+"/home/majmun/esp/v5.3.1/esp-idf/components/freertos/app_startup.c#main_task(void * args)@157:0" "/home/majmun/esp/v5.3.1/esp-idf/components/freertos/app_startup.c#main_task(void * args)@157:0" }
+subgraph "cluster_/home/majmun/esp/v5.3.1/esp-idf/components/freertos/FreeRTOS-Kernel-SMP/portable/linux/port.c" {
+label="/home/majmun/esp/v5.3.1/esp-idf/components/freertos/FreeRTOS-Kernel-SMP/portable/linux/port.c"
+"/home/majmun/esp/v5.3.1/esp-idf/components/freertos/FreeRTOS-Kernel-SMP/portable/linux/port.c#main_task(void * args)@638:0" "/home/majmun/esp/v5.3.1/esp-idf/components/freertos/FreeRTOS-Kernel-SMP/portable/linux/port.c#main_task(void * args)@638:0" }
+}

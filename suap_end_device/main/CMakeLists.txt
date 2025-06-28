@@ -12,4 +12,12 @@ idf_component_register(SRCS
                         "tasks/request_getter.c"
                        INCLUDE_DIRS ".")
 
+                       
+idf_build_set_property(C_COMPILE_OPTIONS "-fcallgraph-info" APPEND) 
+idf_build_set_property(CXX_COMPILE_OPTIONS "-fcallgraph-info" APPEND) 
+idf_build_set_property(C_COMPILE_OPTIONS "-fdump-rtl-expand" APPEND) 
+idf_build_set_property(CXX_COMPILE_OPTIONS "-fdump-rtl-expand" APPEND) 
+
+
 littlefs_create_partition_image(littlefs ../littlefs FLASH_IN_PROJECT)
+
