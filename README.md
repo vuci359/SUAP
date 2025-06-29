@@ -1,2 +1,2 @@
 # SUAP
-Sustav za upravljanje korištenjem API poziva
+Ugradbeni računalni sustav za upravljanje uređajima na mreži
